@@ -1,0 +1,42 @@
+version: '3.9'
+
+networks:
+  gotrading:
+    # no 'external: true'
+
+
+services:
+  mongo:
+    image: ${MONGODB_IMAGE}
+    restart: always
+    networks:
+      - gotrading
+    ports:
+      - "27017:27017"
+    env_file: .env
+    volumes:
+      - mongo-data:/data/db
+      
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    networks:
+      - gotrading
+    ports:
+      - "8080:8080"
+    env_file: 
+      - .env
+    depends_on:
+      - mongo
+
+  # tradingbot:
+  #   image: ${TRADINGBOT_IMAGE}
+  #   networks:
+  #     - gotrading
+  #   env_file: 
+  #     - .env
+  #   platform: linux/arm64
+
+
+volumes:
+  mongo-data:
