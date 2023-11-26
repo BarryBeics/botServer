@@ -53,7 +53,7 @@ func (db *DB) Close() {
 	}
 }
 
-func (db *DB) Save(input *model.NewActivityReport) *model.ActivityReport {
+func (db *DB) SaveActivityReport(input *model.NewActivityReport) *model.ActivityReport {
 	collection := db.client.Database("go_trading_db").Collection("ActivityReports")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -69,7 +69,7 @@ func (db *DB) Save(input *model.NewActivityReport) *model.ActivityReport {
 	}
 }
 
-func (db *DB) FindByID(ID string) *model.ActivityReport {
+func (db *DB) FindActivityReportByID(ID string) *model.ActivityReport {
 	ObjectID, err := primitive.ObjectIDFromHex(ID)
 	if err != nil {
 		log.Error().Err(err).Msg("Error find by func:")
@@ -83,7 +83,7 @@ func (db *DB) FindByID(ID string) *model.ActivityReport {
 	return &ActivityReport
 }
 
-func (db *DB) All() []*model.ActivityReport {
+func (db *DB) AllActivityReports() []*model.ActivityReport {
 	collection := db.client.Database("go_trading_db").Collection("ActivityReports")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

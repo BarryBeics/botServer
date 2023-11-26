@@ -40,7 +40,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
-	Query() QueryResolver
 }
 
 type DirectiveRoot struct {
@@ -59,6 +58,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+	}
+
+	QueryActivityReport struct {
 		ActivityReport  func(childComplexity int, id string) int
 		ActivityReports func(childComplexity int) int
 	}
@@ -66,10 +68,6 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateActivityReport(ctx context.Context, input *model.NewActivityReport) (*model.ActivityReport, error)
-}
-type QueryResolver interface {
-	ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error)
-	ActivityReports(ctx context.Context) ([]*model.ActivityReport, error)
 }
 
 type executableSchema struct {
@@ -131,24 +129,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateActivityReport(childComplexity, args["input"].(*model.NewActivityReport)), true
 
-	case "Query.ActivityReport":
-		if e.complexity.Query.ActivityReport == nil {
+	case "QueryActivityReport.ActivityReport":
+		if e.complexity.QueryActivityReport.ActivityReport == nil {
 			break
 		}
 
-		args, err := ec.field_Query_ActivityReport_args(context.TODO(), rawArgs)
+		args, err := ec.field_QueryActivityReport_ActivityReport_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ActivityReport(childComplexity, args["_id"].(string)), true
+		return e.complexity.QueryActivityReport.ActivityReport(childComplexity, args["_id"].(string)), true
 
-	case "Query.ActivityReports":
-		if e.complexity.Query.ActivityReports == nil {
+	case "QueryActivityReport.ActivityReports":
+		if e.complexity.QueryActivityReport.ActivityReports == nil {
 			break
 		}
 
-		return e.complexity.Query.ActivityReports(childComplexity), true
+		return e.complexity.QueryActivityReport.ActivityReports(childComplexity), true
 
 	}
 	return 0, false
@@ -290,7 +288,7 @@ func (ec *executionContext) field_Mutation_createActivityReport_args(ctx context
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_ActivityReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueryActivityReport_ActivityReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -516,9 +514,9 @@ func (ec *executionContext) _ActivityReport_AvgGain(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ActivityReport_AvgGain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -528,7 +526,7 @@ func (ec *executionContext) fieldContext_ActivityReport_AvgGain(ctx context.Cont
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -595,125 +593,6 @@ func (ec *executionContext) fieldContext_Mutation_createActivityReport(ctx conte
 	if fc.Args, err = ec.field_Mutation_createActivityReport_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_ActivityReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_ActivityReport(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ActivityReport(rctx, fc.Args["_id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.ActivityReport)
-	fc.Result = res
-	return ec.marshalNActivityReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐActivityReport(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_ActivityReport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "_id":
-				return ec.fieldContext_ActivityReport__id(ctx, field)
-			case "Timestamp":
-				return ec.fieldContext_ActivityReport_Timestamp(ctx, field)
-			case "Qty":
-				return ec.fieldContext_ActivityReport_Qty(ctx, field)
-			case "AvgGain":
-				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_ActivityReport_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_ActivityReports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_ActivityReports(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ActivityReports(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.ActivityReport)
-	fc.Result = res
-	return ec.marshalNActivityReport2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐActivityReportᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_ActivityReports(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "_id":
-				return ec.fieldContext_ActivityReport__id(ctx, field)
-			case "Timestamp":
-				return ec.fieldContext_ActivityReport_Timestamp(ctx, field)
-			case "Qty":
-				return ec.fieldContext_ActivityReport_Qty(ctx, field)
-			case "AvgGain":
-				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
-		},
 	}
 	return fc, nil
 }
@@ -842,6 +721,125 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryActivityReport_ActivityReport(ctx context.Context, field graphql.CollectedField, obj *model.QueryActivityReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryActivityReport_ActivityReport(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ActivityReport, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ActivityReport)
+	fc.Result = res
+	return ec.marshalNActivityReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐActivityReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryActivityReport_ActivityReport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryActivityReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "_id":
+				return ec.fieldContext_ActivityReport__id(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_ActivityReport_Timestamp(ctx, field)
+			case "Qty":
+				return ec.fieldContext_ActivityReport_Qty(ctx, field)
+			case "AvgGain":
+				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_QueryActivityReport_ActivityReport_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueryActivityReport_ActivityReports(ctx context.Context, field graphql.CollectedField, obj *model.QueryActivityReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueryActivityReport_ActivityReports(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ActivityReports, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ActivityReport)
+	fc.Result = res
+	return ec.marshalNActivityReport2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐActivityReportᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueryActivityReport_ActivityReports(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueryActivityReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "_id":
+				return ec.fieldContext_ActivityReport__id(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_ActivityReport_Timestamp(ctx, field)
+			case "Qty":
+				return ec.fieldContext_ActivityReport_Qty(ctx, field)
+			case "AvgGain":
+				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
 		},
 	}
 	return fc, nil
@@ -2656,7 +2654,7 @@ func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("AvgGain"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2797,50 +2795,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "ActivityReport":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_ActivityReport(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "ActivityReports":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_ActivityReports(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -2849,6 +2803,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queryActivityReportImplementors = []string{"QueryActivityReport"}
+
+func (ec *executionContext) _QueryActivityReport(ctx context.Context, sel ast.SelectionSet, obj *model.QueryActivityReport) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queryActivityReportImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueryActivityReport")
+		case "ActivityReport":
+			out.Values[i] = ec._QueryActivityReport_ActivityReport(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "ActivityReports":
+			out.Values[i] = ec._QueryActivityReport_ActivityReports(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3269,6 +3267,21 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {

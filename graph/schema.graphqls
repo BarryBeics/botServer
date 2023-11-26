@@ -1,21 +1,21 @@
-type ActivityReport {
-  _id: String!
-  Timestamp: String!
-  Qty: Int!
-  AvgGain: Int!
-}
-
-type Query {
+type QueryActivityReport {
   ActivityReport(_id: String!): ActivityReport!
   ActivityReports: [ActivityReport!]!
+}
+
+type Mutation {
+  createActivityReport(input: NewActivityReport): ActivityReport!
 }
 
 input NewActivityReport {
   Timestamp: String!
   Qty: Int!
-  AvgGain: Int!
+  AvgGain: Float!
 }
 
-type Mutation {
-  createActivityReport(input: NewActivityReport): ActivityReport!
+type ActivityReport {
+  _id: String!
+  Timestamp: String!
+  Qty: Int!
+  AvgGain: Float!
 }
