@@ -3,7 +3,7 @@
 package model
 
 type ActivityReport struct {
-	ID        string  `json:"_id"`
+	ID        string  `bson:"_id"`
 	Timestamp string  `json:"Timestamp"`
 	Qty       int     `json:"Qty"`
 	AvgGain   float64 `json:"AvgGain"`
@@ -13,9 +13,4 @@ type NewActivityReport struct {
 	Timestamp string  `json:"Timestamp"`
 	Qty       int     `json:"Qty"`
 	AvgGain   float64 `json:"AvgGain"`
-}
-
-type QueryActivityReport struct {
-	ActivityReport  *ActivityReport   `json:"ActivityReport"`
-	ActivityReports []*ActivityReport `json:"ActivityReports"`
 }

@@ -16,10 +16,24 @@ func (r *mutationResolver) CreateActivityReport(ctx context.Context, input *mode
 	return db.SaveActivityReport(input), nil
 }
 
+// ActivityReport is the resolver for the ActivityReport field.
+func (r *queryResolver) ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error) {
+	return db.FindActivityReportByID(id), nil
+}
+
+// ActivityReports is the resolver for the ActivityReports field.
+func (r *queryResolver) ActivityReports(ctx context.Context) ([]*model.ActivityReport, error) {
+	return db.AllActivityReports(), nil
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
+// Query returns QueryResolver implementation.
+func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+
 type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
 
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
@@ -28,13 +42,3 @@ type mutationResolver struct{ *Resolver }
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
 var db = database.Connect()
-
-func (r *queryResolver) ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error) {
-	return db.FindActivityReportByID(id), nil
-}
-func (r *queryResolver) ActivityReports(ctx context.Context) ([]*model.ActivityReport, error) {
-	return db.AllActivityReports(), nil
-}
-func (r *Resolver) Query() queryResolver { return queryResolver{r} }
-
-type queryResolver struct{ *Resolver }
