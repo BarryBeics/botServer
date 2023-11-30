@@ -5,10 +5,6 @@ type ActivityReport {
   AvgGain: Float!
 }
 
-type Query {
-  ActivityReport(_id: ID!): ActivityReport!
-  ActivityReports: [ActivityReport!]!
-}
 
 input NewActivityReport {
   Timestamp: String!
@@ -16,9 +12,34 @@ input NewActivityReport {
   AvgGain: Float!
 }
 
-type Mutation {
-  createActivityReport(input: NewActivityReport): ActivityReport!
+
+type TradeOutcomeReport {
+  _id: ID!
+  Timestamp: String!
+  OpeningPrice: Float!
+  ClosePrice: Float!
+  Symbol: String!
+  Outcome: String!
 }
 
+type Query {
+  ActivityReport(_id: ID!): ActivityReport!
+  ActivityReports: [ActivityReport!]!
+  TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
+  TradeOutcomeReports: [TradeOutcomeReport!]!
+}
+
+input NewTradeOutcomeReport {
+  Timestamp: String!
+  OpeningPrice: Float!
+  ClosePrice: Float!
+  Symbol: String!
+  Outcome: String!
+}
+
+type Mutation {
+  createActivityReport(input: NewActivityReport): ActivityReport!
+  createTradeOutcomeReport(input: NewTradeOutcomeReport): TradeOutcomeReport!
+}
 
 

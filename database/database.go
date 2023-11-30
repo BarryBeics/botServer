@@ -102,3 +102,55 @@ func (db *DB) AllActivityReports() []*model.ActivityReport {
 	}
 	return ActivityReports
 }
+
+func (db *DB) SaveTradeOutcomeReport(input *model.NewTradeOutcomeReport) *model.TradeOutcomeReport {
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res, err := collection.InsertOne(ctx, input)
+	if err != nil {
+		log.Error().Err(err).Msg("Error save func:")
+	}
+	return &model.TradeOutcomeReport{
+		ID:           res.InsertedID.(primitive.ObjectID).Hex(),
+		Timestamp:    input.Timestamp,
+		OpeningPrice: input.OpeningPrice,
+		ClosePrice:   input.ClosePrice,
+		Symbol:       input.Symbol,
+		Outcome:      input.Outcome,
+	}
+}
+
+func (db *DB) FindTradeOutcomeReportByID(ID string) *model.TradeOutcomeReport {
+	ObjectID, err := primitive.ObjectIDFromHex(ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Error find by func:")
+	}
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res := collection.FindOne(ctx, bson.M{"_id": ObjectID})
+	TradeOutcomeReport := model.TradeOutcomeReport{}
+	res.Decode(&TradeOutcomeReport)
+	return &TradeOutcomeReport
+}
+
+func (db *DB) AllTradeOutcomeReports() []*model.TradeOutcomeReport {
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cur, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		log.Error().Err(err).Msg("Error All func:")
+	}
+	var TradeOutcomeReports []*model.TradeOutcomeReport
+	for cur.Next(ctx) {
+		var TradeOutcomeReport *model.TradeOutcomeReport
+		err := cur.Decode(&TradeOutcomeReport)
+		if err != nil {
+			log.Error().Err(err).Msg("Error Decode func:")
+		}
+		TradeOutcomeReports = append(TradeOutcomeReports, TradeOutcomeReport)
+	}
+	return TradeOutcomeReports
+}

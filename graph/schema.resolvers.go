@@ -16,6 +16,11 @@ func (r *mutationResolver) CreateActivityReport(ctx context.Context, input *mode
 	return db.SaveActivityReport(input), nil
 }
 
+// CreateTradeOutcomeReport is the resolver for the createTradeOutcomeReport field.
+func (r *mutationResolver) CreateTradeOutcomeReport(ctx context.Context, input *model.NewTradeOutcomeReport) (*model.TradeOutcomeReport, error) {
+	return db.SaveTradeOutcomeReport(input), nil
+}
+
 // ActivityReport is the resolver for the ActivityReport field.
 func (r *queryResolver) ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error) {
 	return db.FindActivityReportByID(id), nil
@@ -24,6 +29,16 @@ func (r *queryResolver) ActivityReport(ctx context.Context, id string) (*model.A
 // ActivityReports is the resolver for the ActivityReports field.
 func (r *queryResolver) ActivityReports(ctx context.Context) ([]*model.ActivityReport, error) {
 	return db.AllActivityReports(), nil
+}
+
+// TradeOutcomeReport is the resolver for the TradeOutcomeReport field.
+func (r *queryResolver) TradeOutcomeReport(ctx context.Context, id string) (*model.TradeOutcomeReport, error) {
+	return db.FindTradeOutcomeReportByID(id), nil
+}
+
+// TradeOutcomeReports is the resolver for the TradeOutcomeReports field.
+func (r *queryResolver) TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error) {
+	return db.AllTradeOutcomeReports(), nil
 }
 
 // Mutation returns MutationResolver implementation.
@@ -35,10 +50,4 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
 var db = database.Connect()

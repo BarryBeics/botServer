@@ -55,21 +55,36 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateActivityReport func(childComplexity int, input *model.NewActivityReport) int
+		CreateActivityReport     func(childComplexity int, input *model.NewActivityReport) int
+		CreateTradeOutcomeReport func(childComplexity int, input *model.NewTradeOutcomeReport) int
 	}
 
 	Query struct {
-		ActivityReport  func(childComplexity int, id string) int
-		ActivityReports func(childComplexity int) int
+		ActivityReport      func(childComplexity int, id string) int
+		ActivityReports     func(childComplexity int) int
+		TradeOutcomeReport  func(childComplexity int, id string) int
+		TradeOutcomeReports func(childComplexity int) int
+	}
+
+	TradeOutcomeReport struct {
+		ClosePrice   func(childComplexity int) int
+		ID           func(childComplexity int) int
+		OpeningPrice func(childComplexity int) int
+		Outcome      func(childComplexity int) int
+		Symbol       func(childComplexity int) int
+		Timestamp    func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	CreateActivityReport(ctx context.Context, input *model.NewActivityReport) (*model.ActivityReport, error)
+	CreateTradeOutcomeReport(ctx context.Context, input *model.NewTradeOutcomeReport) (*model.TradeOutcomeReport, error)
 }
 type QueryResolver interface {
 	ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error)
 	ActivityReports(ctx context.Context) ([]*model.ActivityReport, error)
+	TradeOutcomeReport(ctx context.Context, id string) (*model.TradeOutcomeReport, error)
+	TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error)
 }
 
 type executableSchema struct {
@@ -131,6 +146,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateActivityReport(childComplexity, args["input"].(*model.NewActivityReport)), true
 
+	case "Mutation.createTradeOutcomeReport":
+		if e.complexity.Mutation.CreateTradeOutcomeReport == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTradeOutcomeReport_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTradeOutcomeReport(childComplexity, args["input"].(*model.NewTradeOutcomeReport)), true
+
 	case "Query.ActivityReport":
 		if e.complexity.Query.ActivityReport == nil {
 			break
@@ -150,6 +177,67 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ActivityReports(childComplexity), true
 
+	case "Query.TradeOutcomeReport":
+		if e.complexity.Query.TradeOutcomeReport == nil {
+			break
+		}
+
+		args, err := ec.field_Query_TradeOutcomeReport_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.TradeOutcomeReport(childComplexity, args["_id"].(string)), true
+
+	case "Query.TradeOutcomeReports":
+		if e.complexity.Query.TradeOutcomeReports == nil {
+			break
+		}
+
+		return e.complexity.Query.TradeOutcomeReports(childComplexity), true
+
+	case "TradeOutcomeReport.ClosePrice":
+		if e.complexity.TradeOutcomeReport.ClosePrice == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.ClosePrice(childComplexity), true
+
+	case "TradeOutcomeReport._id":
+		if e.complexity.TradeOutcomeReport.ID == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.ID(childComplexity), true
+
+	case "TradeOutcomeReport.OpeningPrice":
+		if e.complexity.TradeOutcomeReport.OpeningPrice == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.OpeningPrice(childComplexity), true
+
+	case "TradeOutcomeReport.Outcome":
+		if e.complexity.TradeOutcomeReport.Outcome == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.Outcome(childComplexity), true
+
+	case "TradeOutcomeReport.Symbol":
+		if e.complexity.TradeOutcomeReport.Symbol == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.Symbol(childComplexity), true
+
+	case "TradeOutcomeReport.Timestamp":
+		if e.complexity.TradeOutcomeReport.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.Timestamp(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -159,6 +247,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputNewActivityReport,
+		ec.unmarshalInputNewTradeOutcomeReport,
 	)
 	first := true
 
@@ -290,7 +379,37 @@ func (ec *executionContext) field_Mutation_createActivityReport_args(ctx context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createTradeOutcomeReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.NewTradeOutcomeReport
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalONewTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐNewTradeOutcomeReport(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_ActivityReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_TradeOutcomeReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -599,6 +718,75 @@ func (ec *executionContext) fieldContext_Mutation_createActivityReport(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createTradeOutcomeReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTradeOutcomeReport(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTradeOutcomeReport(rctx, fc.Args["input"].(*model.NewTradeOutcomeReport))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.TradeOutcomeReport)
+	fc.Result = res
+	return ec.marshalNTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTradeOutcomeReport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "_id":
+				return ec.fieldContext_TradeOutcomeReport__id(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_TradeOutcomeReport_Timestamp(ctx, field)
+			case "OpeningPrice":
+				return ec.fieldContext_TradeOutcomeReport_OpeningPrice(ctx, field)
+			case "ClosePrice":
+				return ec.fieldContext_TradeOutcomeReport_ClosePrice(ctx, field)
+			case "Symbol":
+				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
+			case "Outcome":
+				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TradeOutcomeReport", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTradeOutcomeReport_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_ActivityReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_ActivityReport(ctx, field)
 	if err != nil {
@@ -713,6 +901,133 @@ func (ec *executionContext) fieldContext_Query_ActivityReports(ctx context.Conte
 				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_TradeOutcomeReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_TradeOutcomeReport(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TradeOutcomeReport(rctx, fc.Args["_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.TradeOutcomeReport)
+	fc.Result = res
+	return ec.marshalNTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_TradeOutcomeReport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "_id":
+				return ec.fieldContext_TradeOutcomeReport__id(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_TradeOutcomeReport_Timestamp(ctx, field)
+			case "OpeningPrice":
+				return ec.fieldContext_TradeOutcomeReport_OpeningPrice(ctx, field)
+			case "ClosePrice":
+				return ec.fieldContext_TradeOutcomeReport_ClosePrice(ctx, field)
+			case "Symbol":
+				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
+			case "Outcome":
+				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TradeOutcomeReport", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_TradeOutcomeReport_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_TradeOutcomeReports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_TradeOutcomeReports(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TradeOutcomeReports(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TradeOutcomeReport)
+	fc.Result = res
+	return ec.marshalNTradeOutcomeReport2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReportᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_TradeOutcomeReports(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "_id":
+				return ec.fieldContext_TradeOutcomeReport__id(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_TradeOutcomeReport_Timestamp(ctx, field)
+			case "OpeningPrice":
+				return ec.fieldContext_TradeOutcomeReport_OpeningPrice(ctx, field)
+			case "ClosePrice":
+				return ec.fieldContext_TradeOutcomeReport_ClosePrice(ctx, field)
+			case "Symbol":
+				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
+			case "Outcome":
+				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TradeOutcomeReport", field.Name)
 		},
 	}
 	return fc, nil
@@ -842,6 +1157,270 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport__id(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport__id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport__id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_Timestamp(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_Timestamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_Timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_OpeningPrice(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_OpeningPrice(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpeningPrice, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_OpeningPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_ClosePrice(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_ClosePrice(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClosePrice, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_ClosePrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_Symbol(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Symbol, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_Symbol(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_Outcome(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Outcome, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_Outcome(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2667,6 +3246,71 @@ func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Context, obj interface{}) (model.NewTradeOutcomeReport, error) {
+	var it model.NewTradeOutcomeReport
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"Timestamp", "OpeningPrice", "ClosePrice", "Symbol", "Outcome"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "Timestamp":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Timestamp = data
+		case "OpeningPrice":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("OpeningPrice"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OpeningPrice = data
+		case "ClosePrice":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ClosePrice"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClosePrice = data
+		case "Symbol":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Symbol"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Symbol = data
+		case "Outcome":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Outcome"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Outcome = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2751,6 +3395,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createActivityReport":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createActivityReport(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createTradeOutcomeReport":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTradeOutcomeReport(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -2841,6 +3492,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "TradeOutcomeReport":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_TradeOutcomeReport(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "TradeOutcomeReports":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_TradeOutcomeReports(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -2849,6 +3544,70 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tradeOutcomeReportImplementors = []string{"TradeOutcomeReport"}
+
+func (ec *executionContext) _TradeOutcomeReport(ctx context.Context, sel ast.SelectionSet, obj *model.TradeOutcomeReport) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tradeOutcomeReportImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TradeOutcomeReport")
+		case "_id":
+			out.Values[i] = ec._TradeOutcomeReport__id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Timestamp":
+			out.Values[i] = ec._TradeOutcomeReport_Timestamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "OpeningPrice":
+			out.Values[i] = ec._TradeOutcomeReport_OpeningPrice(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "ClosePrice":
+			out.Values[i] = ec._TradeOutcomeReport_ClosePrice(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Symbol":
+			out.Values[i] = ec._TradeOutcomeReport_Symbol(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Outcome":
+			out.Values[i] = ec._TradeOutcomeReport_Outcome(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3331,6 +4090,64 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) marshalNTradeOutcomeReport2githubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReport(ctx context.Context, sel ast.SelectionSet, v model.TradeOutcomeReport) graphql.Marshaler {
+	return ec._TradeOutcomeReport(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTradeOutcomeReport2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReportᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TradeOutcomeReport) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReport(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐTradeOutcomeReport(ctx context.Context, sel ast.SelectionSet, v *model.TradeOutcomeReport) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TradeOutcomeReport(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -3615,6 +4432,14 @@ func (ec *executionContext) unmarshalONewActivityReport2ᚖgithubᚗcomᚋbarryb
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputNewActivityReport(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalONewTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐNewTradeOutcomeReport(ctx context.Context, v interface{}) (*model.NewTradeOutcomeReport, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputNewTradeOutcomeReport(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
