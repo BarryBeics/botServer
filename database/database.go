@@ -121,6 +121,66 @@ func (db *DB) SaveTradeOutcomeReport(input *model.NewTradeOutcomeReport) *model.
 	}
 }
 
+func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) []*model.HistoricPrices {
+	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Create a slice to store the inserted HistoricPrices
+	var insertedHistoricPrices []*model.HistoricPrices
+
+	// Iterate over pairs and insert each one into the collection
+	for _, pairInput := range input.Pairs {
+		// Create a new HistoricPrices object for each pair
+		historicPrices := &model.HistoricPrices{
+			Pair: []*model.Pair{
+				{
+					Symbol: pairInput.Symbol,
+					Price:  pairInput.Price,
+				},
+			},
+		}
+
+		// Insert the new HistoricPrices object into the collection
+		_, err := collection.InsertOne(ctx, historicPrices)
+		if err != nil {
+			log.Error().Err(err).Msg("Error saving historic price:")
+			// Handle the error, perhaps return an error or log it
+			return nil
+		}
+
+		// Append the inserted HistoricPrices to the result slice
+		insertedHistoricPrices = append(insertedHistoricPrices, historicPrices)
+	}
+
+	// Return the array of inserted HistoricPrices
+	return insertedHistoricPrices
+}
+
+// HistoricPricesBySymbol fetches historic prices based on the given symbol and limit.
+func (db *DB) HistoricPricesBySymbol(symbol string, limit int) ([]model.HistoricPrices, error) {
+	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"pair.symbol": symbol} // Assuming your data model has a nested "pair" field
+
+	cursor, err := collection.Find(ctx, filter, options.Find().SetLimit(int64(limit)))
+	if err != nil {
+		log.Error().Err(err).Msg("Error fetching historic prices by symbol")
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var historicPrices []model.HistoricPrices
+	if err := cursor.All(ctx, &historicPrices); err != nil {
+		log.Error().Err(err).Msg("Error decoding historic prices")
+		return nil, err
+	}
+
+	return historicPrices, nil
+}
+
 func (db *DB) FindTradeOutcomeReportByID(ID string) *model.TradeOutcomeReport {
 	ObjectID, err := primitive.ObjectIDFromHex(ID)
 	if err != nil {
@@ -153,4 +213,44 @@ func (db *DB) AllTradeOutcomeReports() []*model.TradeOutcomeReport {
 		TradeOutcomeReports = append(TradeOutcomeReports, TradeOutcomeReport)
 	}
 	return TradeOutcomeReports
+}
+
+// func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) bool {
+// 	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	_, err := collection.InsertOne(ctx, input)
+// 	if err != nil {
+// 		log.Error().Err(err).Msg("Error saving historic price:")
+// 		return false
+// 	}
+
+// 	return true
+// }
+
+func (db *DB) AllHistoricPrices(limit int) ([]model.HistoricPrices, error) {
+	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	findOptions := options.Find()
+	if limit > 0 {
+		findOptions.SetLimit(int64(limit))
+	}
+
+	cursor, err := collection.Find(ctx, bson.D{}, findOptions)
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying historic prices:")
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var historicPrices []model.HistoricPrices
+	if err := cursor.All(ctx, &historicPrices); err != nil {
+		log.Error().Err(err).Msg("Error decoding historic prices:")
+		return nil, err
+	}
+
+	return historicPrices, nil
 }

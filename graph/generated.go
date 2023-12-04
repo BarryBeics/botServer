@@ -54,14 +54,25 @@ type ComplexityRoot struct {
 		Timestamp func(childComplexity int) int
 	}
 
+	HistoricPrices struct {
+		Pair func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateActivityReport     func(childComplexity int, input *model.NewActivityReport) int
+		CreateHistoricPrices     func(childComplexity int, input *model.NewHistoricPriceInput) int
 		CreateTradeOutcomeReport func(childComplexity int, input *model.NewTradeOutcomeReport) int
+	}
+
+	Pair struct {
+		Price  func(childComplexity int) int
+		Symbol func(childComplexity int) int
 	}
 
 	Query struct {
 		ActivityReport      func(childComplexity int, id string) int
 		ActivityReports     func(childComplexity int) int
+		GetHistoricPrice    func(childComplexity int, symbol string) int
 		TradeOutcomeReport  func(childComplexity int, id string) int
 		TradeOutcomeReports func(childComplexity int) int
 	}
@@ -79,12 +90,14 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateActivityReport(ctx context.Context, input *model.NewActivityReport) (*model.ActivityReport, error)
 	CreateTradeOutcomeReport(ctx context.Context, input *model.NewTradeOutcomeReport) (*model.TradeOutcomeReport, error)
+	CreateHistoricPrices(ctx context.Context, input *model.NewHistoricPriceInput) ([]*model.HistoricPrices, error)
 }
 type QueryResolver interface {
 	ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error)
 	ActivityReports(ctx context.Context) ([]*model.ActivityReport, error)
 	TradeOutcomeReport(ctx context.Context, id string) (*model.TradeOutcomeReport, error)
 	TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error)
+	GetHistoricPrice(ctx context.Context, symbol string) ([]*model.HistoricPrices, error)
 }
 
 type executableSchema struct {
@@ -134,6 +147,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ActivityReport.Timestamp(childComplexity), true
 
+	case "HistoricPrices.Pair":
+		if e.complexity.HistoricPrices.Pair == nil {
+			break
+		}
+
+		return e.complexity.HistoricPrices.Pair(childComplexity), true
+
 	case "Mutation.createActivityReport":
 		if e.complexity.Mutation.CreateActivityReport == nil {
 			break
@@ -146,6 +166,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateActivityReport(childComplexity, args["input"].(*model.NewActivityReport)), true
 
+	case "Mutation.createHistoricPrices":
+		if e.complexity.Mutation.CreateHistoricPrices == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createHistoricPrices_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateHistoricPrices(childComplexity, args["input"].(*model.NewHistoricPriceInput)), true
+
 	case "Mutation.createTradeOutcomeReport":
 		if e.complexity.Mutation.CreateTradeOutcomeReport == nil {
 			break
@@ -157,6 +189,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateTradeOutcomeReport(childComplexity, args["input"].(*model.NewTradeOutcomeReport)), true
+
+	case "Pair.Price":
+		if e.complexity.Pair.Price == nil {
+			break
+		}
+
+		return e.complexity.Pair.Price(childComplexity), true
+
+	case "Pair.Symbol":
+		if e.complexity.Pair.Symbol == nil {
+			break
+		}
+
+		return e.complexity.Pair.Symbol(childComplexity), true
 
 	case "Query.ActivityReport":
 		if e.complexity.Query.ActivityReport == nil {
@@ -176,6 +222,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ActivityReports(childComplexity), true
+
+	case "Query.getHistoricPrice":
+		if e.complexity.Query.GetHistoricPrice == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getHistoricPrice_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetHistoricPrice(childComplexity, args["symbol"].(string)), true
 
 	case "Query.TradeOutcomeReport":
 		if e.complexity.Query.TradeOutcomeReport == nil {
@@ -247,7 +305,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputNewActivityReport,
+		ec.unmarshalInputNewHistoricPriceInput,
 		ec.unmarshalInputNewTradeOutcomeReport,
+		ec.unmarshalInputPairInput,
 	)
 	first := true
 
@@ -379,6 +439,21 @@ func (ec *executionContext) field_Mutation_createActivityReport_args(ctx context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createHistoricPrices_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.NewHistoricPriceInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalONewHistoricPriceInput2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐNewHistoricPriceInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createTradeOutcomeReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -436,6 +511,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getHistoricPrice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["symbol"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("symbol"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["symbol"] = arg0
 	return args, nil
 }
 
@@ -653,6 +743,53 @@ func (ec *executionContext) fieldContext_ActivityReport_AvgGain(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _HistoricPrices_Pair(ctx context.Context, field graphql.CollectedField, obj *model.HistoricPrices) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HistoricPrices_Pair(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pair, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Pair)
+	fc.Result = res
+	return ec.marshalOPair2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPairᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_HistoricPrices_Pair(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "HistoricPrices",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Symbol":
+				return ec.fieldContext_Pair_Symbol(ctx, field)
+			case "Price":
+				return ec.fieldContext_Pair_Price(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Pair", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createActivityReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createActivityReport(ctx, field)
 	if err != nil {
@@ -783,6 +920,153 @@ func (ec *executionContext) fieldContext_Mutation_createTradeOutcomeReport(ctx c
 	if fc.Args, err = ec.field_Mutation_createTradeOutcomeReport_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createHistoricPrices(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createHistoricPrices(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateHistoricPrices(rctx, fc.Args["input"].(*model.NewHistoricPriceInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.HistoricPrices)
+	fc.Result = res
+	return ec.marshalNHistoricPrices2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐHistoricPricesᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createHistoricPrices(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Pair":
+				return ec.fieldContext_HistoricPrices_Pair(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HistoricPrices", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createHistoricPrices_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Pair_Symbol(ctx context.Context, field graphql.CollectedField, obj *model.Pair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Pair_Symbol(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Symbol, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Pair_Symbol(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Pair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Pair_Price(ctx context.Context, field graphql.CollectedField, obj *model.Pair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Pair_Price(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Pair_Price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Pair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -1029,6 +1313,65 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomeReports(ctx context.C
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TradeOutcomeReport", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getHistoricPrice(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getHistoricPrice(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetHistoricPrice(rctx, fc.Args["symbol"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.HistoricPrices)
+	fc.Result = res
+	return ec.marshalNHistoricPrices2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐHistoricPricesᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getHistoricPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Pair":
+				return ec.fieldContext_HistoricPrices_Pair(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HistoricPrices", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getHistoricPrice_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -3246,6 +3589,35 @@ func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNewHistoricPriceInput(ctx context.Context, obj interface{}) (model.NewHistoricPriceInput, error) {
+	var it model.NewHistoricPriceInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"pairs"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "pairs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pairs"))
+			data, err := ec.unmarshalNPairInput2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPairInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pairs = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Context, obj interface{}) (model.NewTradeOutcomeReport, error) {
 	var it model.NewTradeOutcomeReport
 	asMap := map[string]interface{}{}
@@ -3305,6 +3677,44 @@ func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Cont
 				return it, err
 			}
 			it.Outcome = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPairInput(ctx context.Context, obj interface{}) (model.PairInput, error) {
+	var it model.PairInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"Symbol", "Price"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "Symbol":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Symbol"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Symbol = data
+		case "Price":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Price"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Price = data
 		}
 	}
 
@@ -3373,6 +3783,42 @@ func (ec *executionContext) _ActivityReport(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var historicPricesImplementors = []string{"HistoricPrices"}
+
+func (ec *executionContext) _HistoricPrices(ctx context.Context, sel ast.SelectionSet, obj *model.HistoricPrices) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, historicPricesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("HistoricPrices")
+		case "Pair":
+			out.Values[i] = ec._HistoricPrices_Pair(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3403,6 +3849,57 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTradeOutcomeReport(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createHistoricPrices":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createHistoricPrices(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var pairImplementors = []string{"Pair"}
+
+func (ec *executionContext) _Pair(ctx context.Context, sel ast.SelectionSet, obj *model.Pair) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pairImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Pair")
+		case "Symbol":
+			out.Values[i] = ec._Pair_Symbol(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Price":
+			out.Values[i] = ec._Pair_Price(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3524,6 +4021,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_TradeOutcomeReports(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getHistoricPrice":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getHistoricPrice(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4045,6 +4564,60 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
+func (ec *executionContext) marshalNHistoricPrices2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐHistoricPricesᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.HistoricPrices) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNHistoricPrices2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐHistoricPrices(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNHistoricPrices2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐHistoricPrices(ctx context.Context, sel ast.SelectionSet, v *model.HistoricPrices) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._HistoricPrices(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4073,6 +4646,38 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNPair2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPair(ctx context.Context, sel ast.SelectionSet, v *model.Pair) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Pair(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPairInput2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPairInputᚄ(ctx context.Context, v interface{}) ([]*model.PairInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.PairInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNPairInput2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPairInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNPairInput2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPairInput(ctx context.Context, v interface{}) (*model.PairInput, error) {
+	res, err := ec.unmarshalInputPairInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -4435,12 +5040,67 @@ func (ec *executionContext) unmarshalONewActivityReport2ᚖgithubᚗcomᚋbarryb
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalONewHistoricPriceInput2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐNewHistoricPriceInput(ctx context.Context, v interface{}) (*model.NewHistoricPriceInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputNewHistoricPriceInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalONewTradeOutcomeReport2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐNewTradeOutcomeReport(ctx context.Context, v interface{}) (*model.NewTradeOutcomeReport, error) {
 	if v == nil {
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputNewTradeOutcomeReport(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPair2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPairᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Pair) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPair2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPair(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

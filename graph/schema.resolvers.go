@@ -9,9 +9,10 @@ import (
 
 	"github.com/barrybeics/botServer/database"
 	"github.com/barrybeics/botServer/graph/model"
+	"github.com/rs/zerolog/log"
 )
 
-// CreateActivityReport is the resolver for the createActivityReport field.
+// MutationResolver implementation
 func (r *mutationResolver) CreateActivityReport(ctx context.Context, input *model.NewActivityReport) (*model.ActivityReport, error) {
 	return db.SaveActivityReport(input), nil
 }
@@ -19,6 +20,12 @@ func (r *mutationResolver) CreateActivityReport(ctx context.Context, input *mode
 // CreateTradeOutcomeReport is the resolver for the createTradeOutcomeReport field.
 func (r *mutationResolver) CreateTradeOutcomeReport(ctx context.Context, input *model.NewTradeOutcomeReport) (*model.TradeOutcomeReport, error) {
 	return db.SaveTradeOutcomeReport(input), nil
+}
+
+func (r *mutationResolver) CreateHistoricPrices(ctx context.Context, input *model.NewHistoricPriceInput) ([]*model.HistoricPrices, error) {
+	// Assuming you want to save multiple HistoricPrices in the input
+	insertedHistoricPrices := db.SaveHistoricPrices(input)
+	return insertedHistoricPrices, nil
 }
 
 // ActivityReport is the resolver for the ActivityReport field.
@@ -39,6 +46,24 @@ func (r *queryResolver) TradeOutcomeReport(ctx context.Context, id string) (*mod
 // TradeOutcomeReports is the resolver for the TradeOutcomeReports field.
 func (r *queryResolver) TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error) {
 	return db.AllTradeOutcomeReports(), nil
+}
+
+// GetHistoricPrice is the resolver for the getHistoricPrice field.
+func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string) ([]*model.HistoricPrices, error) {
+	historicPrices, err := db.HistoricPricesBySymbol(symbol, 40)
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting historic prices")
+		return nil, err
+	}
+
+	// Convert slice of model.HistoricPrice to slice of *model.HistoricPrice
+	var result []*model.HistoricPrices
+	for i := range historicPrices {
+		result = append(result, &historicPrices[i])
+	}
+
+	// Return the slice of pointers to historic prices
+	return result, nil
 }
 
 // Mutation returns MutationResolver implementation.

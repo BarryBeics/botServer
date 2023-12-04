@@ -3,16 +3,24 @@
 package model
 
 type ActivityReport struct {
-	ID        string `bson:"_id"`
+	ID        string  `bson:"_id"`
 	Timestamp string  `json:"Timestamp"`
 	Qty       int     `json:"Qty"`
 	AvgGain   float64 `json:"AvgGain"`
+}
+
+type HistoricPrices struct {
+	Pair []*Pair `json:"Pair,omitempty"`
 }
 
 type NewActivityReport struct {
 	Timestamp string  `json:"Timestamp"`
 	Qty       int     `json:"Qty"`
 	AvgGain   float64 `json:"AvgGain"`
+}
+
+type NewHistoricPriceInput struct {
+	Pairs []*PairInput `json:"pairs"`
 }
 
 type NewTradeOutcomeReport struct {
@@ -23,8 +31,18 @@ type NewTradeOutcomeReport struct {
 	Outcome      string  `json:"Outcome"`
 }
 
+type Pair struct {
+	Symbol string `json:"Symbol"`
+	Price  string `json:"Price"`
+}
+
+type PairInput struct {
+	Symbol string `json:"Symbol"`
+	Price  string `json:"Price"`
+}
+
 type TradeOutcomeReport struct {
-	ID        string `bson:"_id"`
+	ID           string  `bson:"_id"`
 	Timestamp    string  `json:"Timestamp"`
 	OpeningPrice float64 `json:"OpeningPrice"`
 	ClosePrice   float64 `json:"ClosePrice"`
