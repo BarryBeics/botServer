@@ -23,6 +23,19 @@ tasks:
     generates:
       - ./botServer
 
+  generate:
+    desc: Generate GQL models
+    cmds:
+      - go generate ./...
+    sources:
+      - graph/schema/*.graphqls
+      - server.go
+      - gqlgen.yml
+    generates:
+      - graph/generated/*.go
+      - graph/resolvers/*.go
+      - graph/model/*gen.go
+
   bump_patch:
     desc: Bump patch version number
     vars:

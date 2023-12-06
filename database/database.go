@@ -121,7 +121,7 @@ func (db *DB) SaveTradeOutcomeReport(input *model.NewTradeOutcomeReport) *model.
 	}
 }
 
-func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) []*model.HistoricPrices {
+func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) ([]*model.HistoricPrices, error) {
 	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -131,14 +131,10 @@ func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) []*model.Hi
 
 	// Iterate over pairs and insert each one into the collection
 	for _, pairInput := range input.Pairs {
-		// Create a new HistoricPrices object for each pair
+		// Create a new HistoricPrices object for each pair with the provided timestamp
 		historicPrices := &model.HistoricPrices{
-			Pair: []*model.Pair{
-				{
-					Symbol: pairInput.Symbol,
-					Price:  pairInput.Price,
-				},
-			},
+			Pair:      []*model.Pair{{Symbol: pairInput.Symbol, Price: pairInput.Price}},
+			Timestamp: input.Timestamp,
 		}
 
 		// Insert the new HistoricPrices object into the collection
@@ -146,7 +142,7 @@ func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) []*model.Hi
 		if err != nil {
 			log.Error().Err(err).Msg("Error saving historic price:")
 			// Handle the error, perhaps return an error or log it
-			return nil
+			return nil, err
 		}
 
 		// Append the inserted HistoricPrices to the result slice
@@ -154,7 +150,7 @@ func (db *DB) SaveHistoricPrices(input *model.NewHistoricPriceInput) []*model.Hi
 	}
 
 	// Return the array of inserted HistoricPrices
-	return insertedHistoricPrices
+	return insertedHistoricPrices, nil
 }
 
 // HistoricPricesBySymbol fetches historic prices based on the given symbol and limit.

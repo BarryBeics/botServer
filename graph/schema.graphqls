@@ -30,6 +30,7 @@ input NewTradeOutcomeReport {
 
 type HistoricPrices {
   Pair: [Pair!]
+  timestamp: String!
 }
 
 type Pair {
@@ -39,6 +40,7 @@ type Pair {
 
 input NewHistoricPriceInput {
   pairs: [PairInput!]!
+  timestamp: String!
 }
 
 input PairInput {
@@ -57,7 +59,7 @@ type Query {
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
   TradeOutcomeReports: [TradeOutcomeReport!]!
-  getHistoricPrice(symbol: String!): [HistoricPrices!]!
+  getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
 }
 
 

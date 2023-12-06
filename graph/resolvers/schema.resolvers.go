@@ -1,4 +1,4 @@
-package graph
+package resolvers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -6,8 +6,10 @@ package graph
 
 import (
 	"context"
+	"sort"
 
 	"github.com/barrybeics/botServer/database"
+	"github.com/barrybeics/botServer/graph/generated"
 	"github.com/barrybeics/botServer/graph/model"
 	"github.com/rs/zerolog/log"
 )
@@ -22,9 +24,15 @@ func (r *mutationResolver) CreateTradeOutcomeReport(ctx context.Context, input *
 	return db.SaveTradeOutcomeReport(input), nil
 }
 
+// CreateHistoricPrices is the resolver for the createHistoricPrices field.
 func (r *mutationResolver) CreateHistoricPrices(ctx context.Context, input *model.NewHistoricPriceInput) ([]*model.HistoricPrices, error) {
 	// Assuming you want to save multiple HistoricPrices in the input
-	insertedHistoricPrices := db.SaveHistoricPrices(input)
+	insertedHistoricPrices, err := db.SaveHistoricPrices(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Assuming you want to return the insertedHistoricPrices and the timestamp
 	return insertedHistoricPrices, nil
 }
 
@@ -49,11 +57,21 @@ func (r *queryResolver) TradeOutcomeReports(ctx context.Context) ([]*model.Trade
 }
 
 // GetHistoricPrice is the resolver for the getHistoricPrice field.
-func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string) ([]*model.HistoricPrices, error) {
-	historicPrices, err := db.HistoricPricesBySymbol(symbol, 40)
+func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string, limit *int) ([]*model.HistoricPrices, error) {
+	historicPrices, err := db.HistoricPricesBySymbol(symbol, *limit)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting historic prices")
 		return nil, err
+	}
+
+	// Sort the historicPrices by timestamp in descending order
+	sort.Slice(historicPrices, func(i, j int) bool {
+		return historicPrices[i].Timestamp > historicPrices[j].Timestamp
+	})
+
+	// Limit the results to the specified limit
+	if *limit < len(historicPrices) {
+		historicPrices = historicPrices[:*limit]
 	}
 
 	// Convert slice of model.HistoricPrice to slice of *model.HistoricPrice
@@ -67,12 +85,18 @@ func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string) ([]
 }
 
 // Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
 var db = database.Connect()
