@@ -125,3 +125,43 @@ func (db *DB) HistoricPricesAtTimestamp(timestamp string) ([]model.HistoricPrice
 
 	return historicPrices, nil
 }
+
+// GetUniqueTimestampCount fetches the count of unique timestamps.
+func (db *DB) GetUniqueTimestampCount(ctx context.Context) (int, error) {
+	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
+
+	// Use aggregation to get unique timestamps
+	pipeline := bson.A{
+		bson.D{{"$group", bson.D{{"_id", "$timestamp"}}}},
+		bson.D{{"$group", bson.D{{"_id", nil}, {"count", bson.D{{"$sum", 1}}}}}},
+	}
+
+	cursor, err := collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		log.Error().Err(err).Msg("Error counting unique timestamps")
+		return 0, err
+	}
+	defer cursor.Close(ctx)
+
+	var result []bson.M
+	if err := cursor.All(ctx, &result); err != nil {
+		log.Error().Err(err).Msg("Error decoding unique timestamps")
+		return 0, err
+	}
+
+	// Extract count from the result
+	count := 0
+	if len(result) > 0 {
+		// Add the switch here to handle both int and int32
+		switch v := result[0]["count"].(type) {
+		case int:
+			count = v
+		case int32:
+			count = int(v)
+		default:
+			log.Error().Msgf("Unexpected type for count: %T", v)
+		}
+	}
+
+	return count, nil
+}

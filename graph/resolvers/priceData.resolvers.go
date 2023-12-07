@@ -69,3 +69,15 @@ func (r *queryResolver) GetHistoricPricesAtTimestamp(ctx context.Context, timest
 	// Return the slice of pointers to historic prices
 	return result, nil
 }
+
+// GetUniqueTimestampCount fetches the count of unique timestamps.
+func (r *queryResolver) GetUniqueTimestampCount(ctx context.Context) (int, error) {
+	int, err := db.GetUniqueTimestampCount(ctx)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting Unique Timestamp Count")
+		return 0, err
+	}
+
+	return int, nil
+}

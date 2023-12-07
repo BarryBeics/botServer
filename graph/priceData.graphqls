@@ -23,7 +23,13 @@ extend type Mutation {
 }
 
 extend type Query {
+  "Fetches price data for a given symbol up to a given limit of records"
   getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
+
+  "Gets all prices data at a given timestamp"
   getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+
+  "Returns a count of timestamps in the DB"
+  getUniqueTimestampCount: Int!
 }
 

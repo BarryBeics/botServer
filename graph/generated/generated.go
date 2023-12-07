@@ -74,6 +74,7 @@ type ComplexityRoot struct {
 		ActivityReports              func(childComplexity int) int
 		GetHistoricPrice             func(childComplexity int, symbol string, limit *int) int
 		GetHistoricPricesAtTimestamp func(childComplexity int, timestamp string) int
+		GetUniqueTimestampCount      func(childComplexity int) int
 		TradeOutcomeReport           func(childComplexity int, id string) int
 		TradeOutcomeReports          func(childComplexity int) int
 	}
@@ -100,6 +101,7 @@ type QueryResolver interface {
 	TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error)
 	GetHistoricPrice(ctx context.Context, symbol string, limit *int) ([]*model.HistoricPrices, error)
 	GetHistoricPricesAtTimestamp(ctx context.Context, timestamp string) ([]*model.HistoricPrices, error)
+	GetUniqueTimestampCount(ctx context.Context) (int, error)
 }
 
 type executableSchema struct {
@@ -255,6 +257,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetHistoricPricesAtTimestamp(childComplexity, args["timestamp"].(string)), true
+
+	case "Query.getUniqueTimestampCount":
+		if e.complexity.Query.GetUniqueTimestampCount == nil {
+			break
+		}
+
+		return e.complexity.Query.GetUniqueTimestampCount(childComplexity), true
 
 	case "Query.TradeOutcomeReport":
 		if e.complexity.Query.TradeOutcomeReport == nil {
@@ -451,8 +460,14 @@ extend type Mutation {
 }
 
 extend type Query {
+  "Fetches price data for a given symbol up to a given limit of records"
   getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
+
+  "Gets all prices data at a given timestamp"
   getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+
+  "Returns a count of timestamps in the DB"
+  getUniqueTimestampCount: Int!
 }
 
 `, BuiltIn: false},
@@ -1589,6 +1604,50 @@ func (ec *executionContext) fieldContext_Query_getHistoricPricesAtTimestamp(ctx 
 	if fc.Args, err = ec.field_Query_getHistoricPricesAtTimestamp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getUniqueTimestampCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getUniqueTimestampCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetUniqueTimestampCount(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getUniqueTimestampCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -4296,6 +4355,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getHistoricPricesAtTimestamp(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getUniqueTimestampCount":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getUniqueTimestampCount(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
