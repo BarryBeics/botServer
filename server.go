@@ -7,7 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/barrybeics/botServer/graph"
+	"github.com/barrybeics/botServer/graph/generated"
+	"github.com/barrybeics/botServer/graph/resolvers"
 	"github.com/rs/zerolog/log"
 
 	"flag"
@@ -32,7 +33,7 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
