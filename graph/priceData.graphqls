@@ -19,7 +19,11 @@ input PairInput {
 }
 
 extend type Mutation {
+  "Creates an array of Historic Price pairs"
   createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
+
+  "Deletes all prices data for the matching given timestamp"
+  deleteHistoricPrices(timestamp: String!): Boolean!
 }
 
 extend type Query {

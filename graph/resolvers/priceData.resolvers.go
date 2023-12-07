@@ -24,6 +24,18 @@ func (r *mutationResolver) CreateHistoricPrices(ctx context.Context, input *mode
 	return insertedHistoricPrices, nil
 }
 
+// DeleteHistoricPrices is the resolver for the deleteHistoricPrices field.
+func (r *mutationResolver) DeleteHistoricPrices(ctx context.Context, timestamp string) (bool, error) {
+	err := db.DeleteHistoricPricesByTimestamp(ctx, timestamp)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting Unique Timestamp Count")
+		return false, err
+	}
+
+	return true, nil
+}
+
 // GetHistoricPrice is the resolver for the getHistoricPrice field.
 func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string, limit *int) ([]*model.HistoricPrices, error) {
 	historicPrices, err := db.HistoricPricesBySymbol(symbol, *limit)

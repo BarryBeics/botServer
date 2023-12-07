@@ -165,3 +165,21 @@ func (db *DB) GetUniqueTimestampCount(ctx context.Context) (int, error) {
 
 	return count, nil
 }
+
+func (db *DB) DeleteHistoricPricesByTimestamp(ctx context.Context, timestamp string) error {
+	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
+
+	// Define a filter to match documents with the specified timestamp
+	filter := bson.D{{"timestamp", timestamp}}
+
+	// Perform the delete operation
+	result, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		log.Error().Err(err).Msgf("Error deleting historic prices with timestamp %s", timestamp)
+		return err
+	}
+
+	log.Info().Msgf("Deleted %d historic prices with timestamp %s", result.DeletedCount, timestamp)
+
+	return nil
+}
