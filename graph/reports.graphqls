@@ -28,30 +28,10 @@ input NewTradeOutcomeReport {
   Outcome: String!
 }
 
-type HistoricPrices {
-  Pair: [Pair!]
-  timestamp: String!
-}
-
-type Pair {
-  Symbol: String!
-  Price: String!
-}
-
-input NewHistoricPriceInput {
-  pairs: [PairInput!]!
-  timestamp: String!
-}
-
-input PairInput {
-  Symbol: String!
-  Price: String!
-}
 
 type Mutation {
   createActivityReport(input: NewActivityReport): ActivityReport!
   createTradeOutcomeReport(input: NewTradeOutcomeReport): TradeOutcomeReport!
-  createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
 }
 
 type Query {
@@ -59,7 +39,6 @@ type Query {
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
   TradeOutcomeReports: [TradeOutcomeReport!]!
-  getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
 }
 
 

@@ -28,7 +28,7 @@ tasks:
     cmds:
       - go generate ./...
     sources:
-      - graph/schema/*.graphqls
+      - graph/*.graphqls
       - server.go
       - gqlgen.yml
     generates:

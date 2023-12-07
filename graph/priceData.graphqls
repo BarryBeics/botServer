@@ -1,0 +1,39 @@
+type HistoricPrices {
+  Pair: [Pair!]
+  timestamp: String!
+}
+
+type Pair {
+  Symbol: String!
+  Price: String!
+}
+
+input NewHistoricPriceInput {
+  pairs: [PairInput!]!
+  timestamp: String!
+}
+
+input PairInput {
+  Symbol: String!
+  Price: String!
+}
+
+extend type Mutation {
+  "Creates an array of Historic Price pairs"
+  createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
+
+  "Deletes all prices data for the matching given timestamp"
+  deleteHistoricPrices(timestamp: String!): Boolean!
+}
+
+extend type Query {
+  "Fetches price data for a given symbol up to a given limit of records"
+  getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
+
+  "Gets all prices data at a given timestamp"
+  getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+
+  "Returns a count of timestamps in the DB"
+  getUniqueTimestampCount: Int!
+}
+
