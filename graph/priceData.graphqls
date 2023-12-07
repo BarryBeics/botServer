@@ -1,0 +1,29 @@
+type HistoricPrices {
+  Pair: [Pair!]
+  timestamp: String!
+}
+
+type Pair {
+  Symbol: String!
+  Price: String!
+}
+
+input NewHistoricPriceInput {
+  pairs: [PairInput!]!
+  timestamp: String!
+}
+
+input PairInput {
+  Symbol: String!
+  Price: String!
+}
+
+extend type Mutation {
+  createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
+}
+
+extend type Query {
+  getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
+  getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+}
+

@@ -70,11 +70,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		ActivityReport      func(childComplexity int, id string) int
-		ActivityReports     func(childComplexity int) int
-		GetHistoricPrice    func(childComplexity int, symbol string, limit *int) int
-		TradeOutcomeReport  func(childComplexity int, id string) int
-		TradeOutcomeReports func(childComplexity int) int
+		ActivityReport               func(childComplexity int, id string) int
+		ActivityReports              func(childComplexity int) int
+		GetHistoricPrice             func(childComplexity int, symbol string, limit *int) int
+		GetHistoricPricesAtTimestamp func(childComplexity int, timestamp string) int
+		TradeOutcomeReport           func(childComplexity int, id string) int
+		TradeOutcomeReports          func(childComplexity int) int
 	}
 
 	TradeOutcomeReport struct {
@@ -98,6 +99,7 @@ type QueryResolver interface {
 	TradeOutcomeReport(ctx context.Context, id string) (*model.TradeOutcomeReport, error)
 	TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error)
 	GetHistoricPrice(ctx context.Context, symbol string, limit *int) ([]*model.HistoricPrices, error)
+	GetHistoricPricesAtTimestamp(ctx context.Context, timestamp string) ([]*model.HistoricPrices, error)
 }
 
 type executableSchema struct {
@@ -241,6 +243,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetHistoricPrice(childComplexity, args["symbol"].(string), args["limit"].(*int)), true
+
+	case "Query.getHistoricPricesAtTimestamp":
+		if e.complexity.Query.GetHistoricPricesAtTimestamp == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getHistoricPricesAtTimestamp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetHistoricPricesAtTimestamp(childComplexity, args["timestamp"].(string)), true
 
 	case "Query.TradeOutcomeReport":
 		if e.complexity.Query.TradeOutcomeReport == nil {
@@ -412,7 +426,37 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema.graphqls", Input: `type ActivityReport {
+	{Name: "../priceData.graphqls", Input: `type HistoricPrices {
+  Pair: [Pair!]
+  timestamp: String!
+}
+
+type Pair {
+  Symbol: String!
+  Price: String!
+}
+
+input NewHistoricPriceInput {
+  pairs: [PairInput!]!
+  timestamp: String!
+}
+
+input PairInput {
+  Symbol: String!
+  Price: String!
+}
+
+extend type Mutation {
+  createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
+}
+
+extend type Query {
+  getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
+  getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+}
+
+`, BuiltIn: false},
+	{Name: "../reports.graphqls", Input: `type ActivityReport {
   _id: ID!
   Timestamp: String!
   Qty: Int!
@@ -442,30 +486,10 @@ input NewTradeOutcomeReport {
   Outcome: String!
 }
 
-type HistoricPrices {
-  Pair: [Pair!]
-  timestamp: String!
-}
-
-type Pair {
-  Symbol: String!
-  Price: String!
-}
-
-input NewHistoricPriceInput {
-  pairs: [PairInput!]!
-  timestamp: String!
-}
-
-input PairInput {
-  Symbol: String!
-  Price: String!
-}
 
 type Mutation {
   createActivityReport(input: NewActivityReport): ActivityReport!
   createTradeOutcomeReport(input: NewTradeOutcomeReport): TradeOutcomeReport!
-  createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
 }
 
 type Query {
@@ -473,7 +497,6 @@ type Query {
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
   TradeOutcomeReports: [TradeOutcomeReport!]!
-  getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
 }
 
 
@@ -596,6 +619,21 @@ func (ec *executionContext) field_Query_getHistoricPrice_args(ctx context.Contex
 		}
 	}
 	args["limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getHistoricPricesAtTimestamp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["timestamp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["timestamp"] = arg0
 	return args, nil
 }
 
@@ -1488,6 +1526,67 @@ func (ec *executionContext) fieldContext_Query_getHistoricPrice(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getHistoricPrice_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getHistoricPricesAtTimestamp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getHistoricPricesAtTimestamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetHistoricPricesAtTimestamp(rctx, fc.Args["timestamp"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.HistoricPrices)
+	fc.Result = res
+	return ec.marshalNHistoricPrices2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐHistoricPricesᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getHistoricPricesAtTimestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Pair":
+				return ec.fieldContext_HistoricPrices_Pair(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_HistoricPrices_timestamp(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type HistoricPrices", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getHistoricPricesAtTimestamp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4175,6 +4274,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getHistoricPrice(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getHistoricPricesAtTimestamp":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getHistoricPricesAtTimestamp(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
