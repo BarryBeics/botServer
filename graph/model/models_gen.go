@@ -43,6 +43,38 @@ type PairInput struct {
 	Price  string `json:"Price"`
 }
 
+type Strategy struct {
+	BotInstanceName      string   `json:"BotInstanceName"`
+	TradeDuration        int      `json:"TradeDuration"`
+	IncrementsAtr        int      `json:"IncrementsATR"`
+	LongSMADuration      int      `json:"LongSMADuration"`
+	ShortSMADuration     int      `json:"ShortSMADuration"`
+	WINCounter           *int     `json:"WINCounter,omitempty"`
+	LOSSCounter          *int     `json:"LOSSCounter,omitempty"`
+	TIMEOUTCounter       *int     `json:"TIMEOUTCounter,omitempty"`
+	MovingAveMomentum    float64  `json:"MovingAveMomentum"`
+	TakeProfitPercentage *float64 `json:"TakeProfitPercentage,omitempty"`
+	StopLossPercentage   *float64 `json:"StopLossPercentage,omitempty"`
+	Owner                *string  `json:"Owner,omitempty"`
+	CreatedOn            *string  `json:"CreatedOn,omitempty"`
+}
+
+type StrategyInput struct {
+	BotInstanceName      string  `json:"BotInstanceName"`
+	TradeDuration        int     `json:"TradeDuration"`
+	IncrementsAtr        int     `json:"IncrementsATR"`
+	LongSMADuration      int     `json:"LongSMADuration"`
+	ShortSMADuration     int     `json:"ShortSMADuration"`
+	WINCounter           *int    `json:"WINCounter,omitempty"`
+	LOSSCounter          *int    `json:"LOSSCounter,omitempty"`
+	TIMEOUTCounter       *int    `json:"TIMEOUTCounter,omitempty"`
+	MovingAveMomentum    float64 `json:"MovingAveMomentum"`
+	TakeProfitPercentage float64 `json:"TakeProfitPercentage"`
+	StopLossPercentage   float64 `json:"StopLossPercentage"`
+	Owner                string  `json:"Owner"`
+	CreatedOn            string  `json:"CreatedOn"`
+}
+
 type TradeOutcomeReport struct {
 	ID           string  `json:"_id"`
 	Timestamp    string  `json:"Timestamp"`
