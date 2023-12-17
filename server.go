@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -9,12 +11,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/barrybeics/botServer/graph/generated"
 	"github.com/barrybeics/botServer/graph/resolvers"
-	"github.com/rs/zerolog/log"
-
-	"flag"
-	"fmt"
-
 	"github.com/rs/zerolog"
+	log "github.com/rs/zerolog/log"
 )
 
 const defaultPort = "8080"
@@ -33,10 +31,14 @@ func main() {
 		port = defaultPort
 	}
 
+	// Create a GraphQL server
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{}}))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	// Use a middleware to set CORS headers for the root path (GraphQL Playground)
+	http.Handle("/", corsMiddleware(playground.Handler("GraphQL playground", "/query")))
+
+	// Use a middleware to set CORS headers for the /query path (GraphQL endpoint)
+	http.Handle("/query", corsMiddleware(srv))
 
 	log.Info().Str("Port", port).Msg("connect to http://localhost: for GraphQL playground on:")
 
@@ -53,6 +55,25 @@ func main() {
 
 	// Block the main goroutine until a signal is received
 	<-stop
+}
+
+// corsMiddleware is a middleware function to set CORS headers
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler in the chain
+		next.ServeHTTP(w, r)
+	})
 }
 
 // SetupLogger is a function that configures logging for the application. It
