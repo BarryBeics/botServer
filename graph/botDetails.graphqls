@@ -1,0 +1,48 @@
+# botDetails.graphqls
+
+# Extend the existing Strategy type with additional fields
+extend type Strategy {
+  BotInstanceName: String!
+  TradeDuration: Int!
+  IncrementsATR: Int!
+  LongSMADuration: Int!
+  ShortSMADuration: Int!
+  WINCounter: Int
+  LOSSCounter: Int
+  TIMEOUTCounter: Int
+  MovingAveMomentum: Float!
+  TakeProfitPercentage: Float
+  StopLossPercentage: Float
+  Owner: String
+  CreatedOn: String
+}
+
+# New input type for creating or updating a strategy
+input StrategyInput {
+  BotInstanceName: String!
+  TradeDuration: Int!
+  IncrementsATR: Int!
+  LongSMADuration: Int!
+  ShortSMADuration: Int!
+  WINCounter: Int
+  LOSSCounter: Int
+  TIMEOUTCounter: Int
+  MovingAveMomentum: Float!
+  TakeProfitPercentage: Float!
+  StopLossPercentage: Float!
+  Owner: String!
+  CreatedOn: String!
+}
+
+# Extend the existing Query type with a new query to get a strategy by name
+extend type Query {
+  getStrategyByName(BotInstanceName: String!): Strategy
+  getAllStrategies: [Strategy]
+}
+
+# Extend the existing Mutation type with new mutations for CRUD operations on strategies
+extend type Mutation {
+  createStrategy(input: StrategyInput!): Strategy
+  updateStrategy(BotInstanceName: String!, input: StrategyInput!): Strategy
+  deleteStrategy(BotInstanceName: String!): Boolean
+}
