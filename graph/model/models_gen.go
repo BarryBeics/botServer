@@ -2,8 +2,9 @@
 
 package model
 
+
 type ActivityReport struct {
-	ID        string  `json:"_id"`
+	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
 	Timestamp string  `json:"Timestamp"`
 	Qty       int     `json:"Qty"`
 	AvgGain   float64 `json:"AvgGain"`
@@ -76,7 +77,7 @@ type StrategyInput struct {
 }
 
 type TradeOutcomeReport struct {
-	ID           string  `json:"_id"`
+	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
 	Timestamp    string  `json:"Timestamp"`
 	OpeningPrice float64 `json:"OpeningPrice"`
 	ClosePrice   float64 `json:"ClosePrice"`

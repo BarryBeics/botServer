@@ -7,9 +7,8 @@ package resolvers
 import (
 	"context"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/barrybeics/botServer/graph/model"
+	"github.com/rs/zerolog/log"
 )
 
 // CreateStrategy is the resolver for the createStrategy field.
@@ -58,4 +57,16 @@ func (r *queryResolver) GetStrategyByName(ctx context.Context, botInstanceName s
 	}
 
 	return strategy, nil
+}
+
+// GetAllStrategies is the resolver for the getAllStrategies field.
+func (r *queryResolver) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
+	// Assuming db is an instance of your DB type
+	strategies, err := db.GetAllStrategies(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Error getting all strategies:")
+		return nil, err
+	}
+
+	return strategies, nil
 }

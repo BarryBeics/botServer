@@ -76,6 +76,7 @@ type ComplexityRoot struct {
 	Query struct {
 		ActivityReport               func(childComplexity int, id string) int
 		ActivityReports              func(childComplexity int) int
+		GetAllStrategies             func(childComplexity int) int
 		GetHistoricPrice             func(childComplexity int, symbol string, limit *int) int
 		GetHistoricPricesAtTimestamp func(childComplexity int, timestamp string) int
 		GetStrategyByName            func(childComplexity int, botInstanceName string) int
@@ -125,6 +126,7 @@ type QueryResolver interface {
 	TradeOutcomeReport(ctx context.Context, id string) (*model.TradeOutcomeReport, error)
 	TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error)
 	GetStrategyByName(ctx context.Context, botInstanceName string) (*model.Strategy, error)
+	GetAllStrategies(ctx context.Context) ([]*model.Strategy, error)
 	GetHistoricPrice(ctx context.Context, symbol string, limit *int) ([]*model.HistoricPrices, error)
 	GetHistoricPricesAtTimestamp(ctx context.Context, timestamp string) ([]*model.HistoricPrices, error)
 	GetUniqueTimestampCount(ctx context.Context) (int, error)
@@ -307,6 +309,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ActivityReports(childComplexity), true
+
+	case "Query.getAllStrategies":
+		if e.complexity.Query.GetAllStrategies == nil {
+			break
+		}
+
+		return e.complexity.Query.GetAllStrategies(childComplexity), true
 
 	case "Query.getHistoricPrice":
 		if e.complexity.Query.GetHistoricPrice == nil {
@@ -652,6 +661,7 @@ input StrategyInput {
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
   getStrategyByName(BotInstanceName: String!): Strategy
+  getAllStrategies: [Strategy]
 }
 
 # Extend the existing Mutation type with new mutations for CRUD operations on strategies
@@ -2143,6 +2153,75 @@ func (ec *executionContext) fieldContext_Query_getStrategyByName(ctx context.Con
 	if fc.Args, err = ec.field_Query_getStrategyByName_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getAllStrategies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getAllStrategies(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllStrategies(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Strategy)
+	fc.Result = res
+	return ec.marshalOStrategy2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐStrategy(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getAllStrategies(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "BotInstanceName":
+				return ec.fieldContext_Strategy_BotInstanceName(ctx, field)
+			case "TradeDuration":
+				return ec.fieldContext_Strategy_TradeDuration(ctx, field)
+			case "IncrementsATR":
+				return ec.fieldContext_Strategy_IncrementsATR(ctx, field)
+			case "LongSMADuration":
+				return ec.fieldContext_Strategy_LongSMADuration(ctx, field)
+			case "ShortSMADuration":
+				return ec.fieldContext_Strategy_ShortSMADuration(ctx, field)
+			case "WINCounter":
+				return ec.fieldContext_Strategy_WINCounter(ctx, field)
+			case "LOSSCounter":
+				return ec.fieldContext_Strategy_LOSSCounter(ctx, field)
+			case "TIMEOUTCounter":
+				return ec.fieldContext_Strategy_TIMEOUTCounter(ctx, field)
+			case "MovingAveMomentum":
+				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
+			case "TakeProfitPercentage":
+				return ec.fieldContext_Strategy_TakeProfitPercentage(ctx, field)
+			case "StopLossPercentage":
+				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
+			case "Owner":
+				return ec.fieldContext_Strategy_Owner(ctx, field)
+			case "CreatedOn":
+				return ec.fieldContext_Strategy_CreatedOn(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Strategy", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -5710,6 +5789,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getAllStrategies":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAllStrategies(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "getHistoricPrice":
 			field := field
 
@@ -6935,6 +7033,47 @@ func (ec *executionContext) marshalOPair2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotSe
 			return graphql.Null
 		}
 	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOStrategy2ᚕᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐStrategy(ctx context.Context, sel ast.SelectionSet, v []*model.Strategy) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOStrategy2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐStrategy(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
 
 	return ret
 }

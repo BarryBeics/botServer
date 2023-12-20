@@ -37,6 +37,7 @@ input StrategyInput {
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
   getStrategyByName(BotInstanceName: String!): Strategy
+  getAllStrategies: [Strategy]
 }
 
 # Extend the existing Mutation type with new mutations for CRUD operations on strategies

@@ -101,3 +101,23 @@ func (db *DB) GetStrategyByName(ctx context.Context, botInstanceName string) (*m
 
 	return &strategy, nil
 }
+
+// GetAllStrategies retrieves all strategies from the database.
+func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
+	collection := db.client.Database("go_trading_db").Collection("BotDetails")
+
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying all strategies:")
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var strategies []*model.Strategy
+	if err := cursor.All(ctx, &strategies); err != nil {
+		log.Error().Err(err).Msg("Error decoding all strategies:")
+		return nil, err
+	}
+
+	return strategies, nil
+}
