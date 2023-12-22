@@ -34,6 +34,15 @@ input StrategyInput {
   CreatedOn: String!
 }
 
+# New input type for updating counters
+input UpdateCountersInput {
+  BotInstanceName: String!
+  WINCounter: Boolean
+  LOSSCounter: Boolean
+  TIMEOUTCounter: Boolean
+}
+
+
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
   getStrategyByName(BotInstanceName: String!): Strategy
@@ -45,4 +54,5 @@ extend type Mutation {
   createStrategy(input: StrategyInput!): Strategy
   updateStrategy(BotInstanceName: String!, input: StrategyInput!): Strategy
   deleteStrategy(BotInstanceName: String!): Boolean
+  updateCounters(input: UpdateCountersInput!): Boolean
 }

@@ -47,6 +47,20 @@ func (r *mutationResolver) DeleteStrategy(ctx context.Context, botInstanceName s
 	return &success, nil
 }
 
+// UpdateCounters is the resolver for the updateCounters field.
+func (r *mutationResolver) UpdateCounters(ctx context.Context, input model.UpdateCountersInput) (*bool, error) {
+	// Use input values to call the underlying database operation
+	err := db.UpdateCounters(ctx, input.BotInstanceName, *input.WINCounter, *input.LOSSCounter, *input.TIMEOUTCounter)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update counters.")
+		return nil, err
+	}
+
+	success := true
+
+	return &success, nil
+}
+
 // GetStrategyByName is the resolver for the getStrategyByName field.
 func (r *queryResolver) GetStrategyByName(ctx context.Context, botInstanceName string) (*model.Strategy, error) {
 	// Assuming db is an instance of your DB type

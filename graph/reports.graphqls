@@ -14,16 +14,18 @@ input NewActivityReport {
 type TradeOutcomeReport {
   _id: ID!
   Timestamp: String!
-  OpeningPrice: Float!
-  ClosePrice: Float!
+  BotName: String!
+  PercentageChange: Float!
+  Balance: Float!
   Symbol: String!
   Outcome: String!
 }
 
 input NewTradeOutcomeReport {
   Timestamp: String!
-  OpeningPrice: Float!
-  ClosePrice: Float!
+  BotName: String!
+  PercentageChange: Float!
+  Balance: Float!
   Symbol: String!
   Outcome: String!
 }
@@ -38,6 +40,7 @@ type Query {
   ActivityReport(_id: ID!): ActivityReport!
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
+  TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 

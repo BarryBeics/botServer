@@ -2,7 +2,6 @@
 
 package model
 
-
 type ActivityReport struct {
 	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
 	Timestamp string  `json:"Timestamp"`
@@ -27,11 +26,12 @@ type NewHistoricPriceInput struct {
 }
 
 type NewTradeOutcomeReport struct {
-	Timestamp    string  `json:"Timestamp"`
-	OpeningPrice float64 `json:"OpeningPrice"`
-	ClosePrice   float64 `json:"ClosePrice"`
-	Symbol       string  `json:"Symbol"`
-	Outcome      string  `json:"Outcome"`
+	Timestamp        string  `json:"Timestamp"`
+	BotName          string  `json:"BotName"`
+	PercentageChange float64 `json:"PercentageChange"`
+	Balance          float64 `json:"Balance"`
+	Symbol           string  `json:"Symbol"`
+	Outcome          string  `json:"Outcome"`
 }
 
 type Pair struct {
@@ -77,10 +77,18 @@ type StrategyInput struct {
 }
 
 type TradeOutcomeReport struct {
-	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
-	Timestamp    string  `json:"Timestamp"`
-	OpeningPrice float64 `json:"OpeningPrice"`
-	ClosePrice   float64 `json:"ClosePrice"`
-	Symbol       string  `json:"Symbol"`
-	Outcome      string  `json:"Outcome"`
+	ID               string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	Timestamp        string  `json:"Timestamp"`
+	BotName          string  `json:"BotName"`
+	PercentageChange float64 `json:"PercentageChange"`
+	Balance          float64 `json:"Balance"`
+	Symbol           string  `json:"Symbol"`
+	Outcome          string  `json:"Outcome"`
+}
+
+type UpdateCountersInput struct {
+	BotInstanceName string `json:"BotInstanceName"`
+	WINCounter      *bool  `json:"WINCounter,omitempty"`
+	LOSSCounter     *bool  `json:"LOSSCounter,omitempty"`
+	TIMEOUTCounter  *bool  `json:"TIMEOUTCounter,omitempty"`
 }

@@ -70,12 +70,13 @@ func (db *DB) SaveTradeOutcomeReport(input *model.NewTradeOutcomeReport) *model.
 		log.Error().Err(err).Msg("Error save func:")
 	}
 	return &model.TradeOutcomeReport{
-		ID:           res.InsertedID.(primitive.ObjectID).Hex(),
-		Timestamp:    input.Timestamp,
-		OpeningPrice: input.OpeningPrice,
-		ClosePrice:   input.ClosePrice,
-		Symbol:       input.Symbol,
-		Outcome:      input.Outcome,
+		ID:               res.InsertedID.(primitive.ObjectID).Hex(),
+		Timestamp:        input.Timestamp,
+		BotName:          input.BotName,
+		PercentageChange: input.PercentageChange,
+		Balance:          input.Balance,
+		Symbol:           input.Symbol,
+		Outcome:          input.Outcome,
 	}
 }
 
@@ -111,4 +112,28 @@ func (db *DB) AllTradeOutcomeReports() []*model.TradeOutcomeReport {
 		TradeOutcomeReports = append(TradeOutcomeReports, TradeOutcomeReport)
 	}
 	return TradeOutcomeReports
+}
+
+// TradeOutcomeReportsByBot retrieves trade outcome reports based on the BotName.
+func (db *DB) TradeOutcomeReportsByBotName(ctx context.Context, botName string) ([]*model.TradeOutcomeReport, error) {
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+
+	filter := bson.D{{"botname", botName}}
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		log.Error().Err(err).Msg("Error TradeOutcomeReportsByBot func:")
+		return nil, err
+	}
+
+	var tradeOutcomeReports []*model.TradeOutcomeReport
+	for cur.Next(ctx) {
+		var tradeOutcomeReport *model.TradeOutcomeReport
+		err := cur.Decode(&tradeOutcomeReport)
+		if err != nil {
+			log.Error().Err(err).Msg("Error Decode func:")
+		}
+		tradeOutcomeReports = append(tradeOutcomeReports, tradeOutcomeReport)
+	}
+	return tradeOutcomeReports, nil
 }

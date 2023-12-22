@@ -35,6 +35,11 @@ func (r *queryResolver) TradeOutcomeReport(ctx context.Context, id string) (*mod
 	return db.FindTradeOutcomeReportByID(id), nil
 }
 
+// TradeOutcomes retrieves trade outcome reports based on the BotName.
+func (r *queryResolver) TradeOutcomes(ctx context.Context, BotName string) ([]*model.TradeOutcomeReport, error) {
+	return db.TradeOutcomeReportsByBotName(ctx, BotName)
+}
+
 // TradeOutcomeReports is the resolver for the TradeOutcomeReports field.
 func (r *queryResolver) TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error) {
 	return db.AllTradeOutcomeReports(), nil

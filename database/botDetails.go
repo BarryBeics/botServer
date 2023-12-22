@@ -121,3 +121,41 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 
 	return strategies, nil
 }
+
+// UpdateCounters updates WIN, LOSS, and TIMEOUT counters in the database for a specific strategy.
+func (db *DB) UpdateCounters(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUT bool) error {
+	collection := db.client.Database("go_trading_db").Collection("BotDetails")
+
+	filter := bson.D{{"botinstancename", botInstanceName}}
+
+	update := bson.D{
+		{"$inc", bson.D{
+			{"wincounter", func() int {
+				if incrementWIN {
+					return 1
+				}
+				return 0
+			}()},
+			{"losscounter", func() int {
+				if incrementLOSS {
+					return 1
+				}
+				return 0
+			}()},
+			{"timeoutcounter", func() int {
+				if incrementTIMEOUT {
+					return 1
+				}
+				return 0
+			}()},
+		}},
+	}
+
+	_, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating counters in the database:")
+		return err
+	}
+
+	return nil
+}
