@@ -19,6 +19,9 @@ type TradeOutcomeReport {
   Balance: Float!
   Symbol: String!
   Outcome: String!
+  ElapsedTime: Int!
+  FearGreedIndex: Int!
+  MarketStatus: String!
 }
 
 input NewTradeOutcomeReport {
@@ -28,6 +31,9 @@ input NewTradeOutcomeReport {
   Balance: Float!
   Symbol: String!
   Outcome: String!
+  ElapsedTime: Int!
+  FearGreedIndex: Int!
+  MarketStatus: String!
 }
 
 
@@ -41,6 +47,7 @@ type Query {
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
   TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
+  TradeOutcomesInFocus(BotName: String!, MarketStatus: String!): [TradeOutcomeReport!]!
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 
