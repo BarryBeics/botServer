@@ -47,7 +47,7 @@ type Query {
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
   TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
-  TradeOutcomesInFocus(BotName: String!, MarketStatus: String!): [TradeOutcomeReport!]!
+  TradeOutcomesInFocus(BotName: String!, MarketStatus: String!, limit: Int): [TradeOutcomeReport!]!
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 

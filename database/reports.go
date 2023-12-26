@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (db *DB) SaveActivityReport(input *model.NewActivityReport) *model.ActivityReport {
@@ -141,8 +142,8 @@ func (db *DB) TradeOutcomeReportsByBotName(ctx context.Context, botName string) 
 	return tradeOutcomeReports, nil
 }
 
-// TradeOutcomeReportsByBotName retrieves trade outcome reports based on the BotName and MarketStatus.
-func (db *DB) TradeOutcomeReportsByBotNameAndMarketStatus(ctx context.Context, botName string, marketStatus string) ([]*model.TradeOutcomeReport, error) {
+// TradeOutcomeReportsByBotNameAndMarketStatus retrieves trade outcome reports based on the BotName and MarketStatus with a limit.
+func (db *DB) TradeOutcomeReportsByBotNameAndMarketStatus(ctx context.Context, botName string, marketStatus string, limit int) ([]*model.TradeOutcomeReport, error) {
 	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
 
 	filter := bson.D{
@@ -150,7 +151,9 @@ func (db *DB) TradeOutcomeReportsByBotNameAndMarketStatus(ctx context.Context, b
 		{"marketstatus", marketStatus},
 	}
 
-	cur, err := collection.Find(ctx, filter)
+	findOptions := options.Find().SetLimit(int64(limit))
+
+	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		log.Error().Err(err).Msg("Error TradeOutcomeReportsByBotName func:")
 		return nil, err

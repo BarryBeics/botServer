@@ -41,8 +41,8 @@ func (r *queryResolver) TradeOutcomes(ctx context.Context, botName string) ([]*m
 }
 
 // TradeOutcomesInFocus is the resolver for the TradeOutcomesInFocus field.
-func (r *queryResolver) TradeOutcomesInFocus(ctx context.Context, botName string, marketStatus string) ([]*model.TradeOutcomeReport, error) {
-	return db.TradeOutcomeReportsByBotNameAndMarketStatus(ctx, botName, marketStatus)
+func (r *queryResolver) TradeOutcomesInFocus(ctx context.Context, botName string, marketStatus string, limit *int) ([]*model.TradeOutcomeReport, error) {
+	return db.TradeOutcomeReportsByBotNameAndMarketStatus(ctx, botName, marketStatus, *limit)
 }
 
 // TradeOutcomeReports is the resolver for the TradeOutcomeReports field.

@@ -80,7 +80,7 @@ type StrategyInput struct {
 }
 
 type TradeOutcomeReport struct {
-	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	ID               string  `json:"_id,omitempty" bson:"_id,omitempty"`
 	Timestamp        string  `json:"Timestamp"`
 	BotName          string  `json:"BotName"`
 	PercentageChange float64 `json:"PercentageChange"`

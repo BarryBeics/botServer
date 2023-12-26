@@ -85,7 +85,7 @@ type ComplexityRoot struct {
 		TradeOutcomeReport           func(childComplexity int, id string) int
 		TradeOutcomeReports          func(childComplexity int) int
 		TradeOutcomes                func(childComplexity int, botName string) int
-		TradeOutcomesInFocus         func(childComplexity int, botName string, marketStatus string) int
+		TradeOutcomesInFocus         func(childComplexity int, botName string, marketStatus string, limit *int) int
 	}
 
 	Strategy struct {
@@ -133,7 +133,7 @@ type QueryResolver interface {
 	ActivityReports(ctx context.Context) ([]*model.ActivityReport, error)
 	TradeOutcomeReport(ctx context.Context, id string) (*model.TradeOutcomeReport, error)
 	TradeOutcomes(ctx context.Context, botName string) ([]*model.TradeOutcomeReport, error)
-	TradeOutcomesInFocus(ctx context.Context, botName string, marketStatus string) ([]*model.TradeOutcomeReport, error)
+	TradeOutcomesInFocus(ctx context.Context, botName string, marketStatus string, limit *int) ([]*model.TradeOutcomeReport, error)
 	TradeOutcomeReports(ctx context.Context) ([]*model.TradeOutcomeReport, error)
 	GetStrategyByName(ctx context.Context, botInstanceName string) (*model.Strategy, error)
 	GetAllStrategies(ctx context.Context) ([]*model.Strategy, error)
@@ -423,7 +423,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.TradeOutcomesInFocus(childComplexity, args["BotName"].(string), args["MarketStatus"].(string)), true
+		return e.complexity.Query.TradeOutcomesInFocus(childComplexity, args["BotName"].(string), args["MarketStatus"].(string), args["limit"].(*int)), true
 
 	case "Strategy.BotInstanceName":
 		if e.complexity.Strategy.BotInstanceName == nil {
@@ -845,7 +845,7 @@ type Query {
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
   TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
-  TradeOutcomesInFocus(BotName: String!, MarketStatus: String!): [TradeOutcomeReport!]!
+  TradeOutcomesInFocus(BotName: String!, MarketStatus: String!, limit: Int): [TradeOutcomeReport!]!
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 
@@ -1038,6 +1038,15 @@ func (ec *executionContext) field_Query_TradeOutcomesInFocus_args(ctx context.Co
 		}
 	}
 	args["MarketStatus"] = arg1
+	var arg2 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg2
 	return args, nil
 }
 
@@ -2327,7 +2336,7 @@ func (ec *executionContext) _Query_TradeOutcomesInFocus(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TradeOutcomesInFocus(rctx, fc.Args["BotName"].(string), fc.Args["MarketStatus"].(string))
+		return ec.resolvers.Query().TradeOutcomesInFocus(rctx, fc.Args["BotName"].(string), fc.Args["MarketStatus"].(string), fc.Args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
