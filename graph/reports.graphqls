@@ -3,12 +3,20 @@ type ActivityReport {
   Timestamp: String!
   Qty: Int!
   AvgGain: Float!
+  TopAGain: Float
+  TopBGain: Float
+  TopCGain: Float
+  FearGreedIndex: Int!
 }
 
 input NewActivityReport {
   Timestamp: String!
   Qty: Int!
   AvgGain: Float!
+  TopAGain: Float
+  TopBGain: Float
+  TopCGain: Float
+  FearGreedIndex: Int!
 }
 
 type TradeOutcomeReport {

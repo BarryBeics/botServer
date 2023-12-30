@@ -21,10 +21,14 @@ func (db *DB) SaveActivityReport(input *model.NewActivityReport) *model.Activity
 		log.Error().Err(err).Msg("Error save func:")
 	}
 	return &model.ActivityReport{
-		ID:        res.InsertedID.(primitive.ObjectID).Hex(),
-		Timestamp: input.Timestamp,
-		Qty:       input.Qty,
-		AvgGain:   input.AvgGain,
+		ID:             res.InsertedID.(primitive.ObjectID).Hex(),
+		Timestamp:      input.Timestamp,
+		Qty:            input.Qty,
+		AvgGain:        input.AvgGain,
+		TopAGain:       input.TopAGain,
+		TopBGain:       input.TopBGain,
+		TopCGain:       input.TopCGain,
+		FearGreedIndex: input.FearGreedIndex,
 	}
 }
 

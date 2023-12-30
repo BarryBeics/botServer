@@ -47,10 +47,14 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	ActivityReport struct {
-		AvgGain   func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Qty       func(childComplexity int) int
-		Timestamp func(childComplexity int) int
+		AvgGain        func(childComplexity int) int
+		FearGreedIndex func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Qty            func(childComplexity int) int
+		Timestamp      func(childComplexity int) int
+		TopAGain       func(childComplexity int) int
+		TopBGain       func(childComplexity int) int
+		TopCGain       func(childComplexity int) int
 	}
 
 	HistoricPrices struct {
@@ -168,6 +172,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ActivityReport.AvgGain(childComplexity), true
 
+	case "ActivityReport.FearGreedIndex":
+		if e.complexity.ActivityReport.FearGreedIndex == nil {
+			break
+		}
+
+		return e.complexity.ActivityReport.FearGreedIndex(childComplexity), true
+
 	case "ActivityReport._id":
 		if e.complexity.ActivityReport.ID == nil {
 			break
@@ -188,6 +199,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ActivityReport.Timestamp(childComplexity), true
+
+	case "ActivityReport.TopAGain":
+		if e.complexity.ActivityReport.TopAGain == nil {
+			break
+		}
+
+		return e.complexity.ActivityReport.TopAGain(childComplexity), true
+
+	case "ActivityReport.TopBGain":
+		if e.complexity.ActivityReport.TopBGain == nil {
+			break
+		}
+
+		return e.complexity.ActivityReport.TopBGain(childComplexity), true
+
+	case "ActivityReport.TopCGain":
+		if e.complexity.ActivityReport.TopCGain == nil {
+			break
+		}
+
+		return e.complexity.ActivityReport.TopCGain(childComplexity), true
 
 	case "HistoricPrices.Pair":
 		if e.complexity.HistoricPrices.Pair == nil {
@@ -801,12 +833,20 @@ extend type Query {
   Timestamp: String!
   Qty: Int!
   AvgGain: Float!
+  TopAGain: Float
+  TopBGain: Float
+  TopCGain: Float
+  FearGreedIndex: Int!
 }
 
 input NewActivityReport {
   Timestamp: String!
   Qty: Int!
   AvgGain: Float!
+  TopAGain: Float
+  TopBGain: Float
+  TopCGain: Float
+  FearGreedIndex: Int!
 }
 
 type TradeOutcomeReport {
@@ -1348,6 +1388,173 @@ func (ec *executionContext) fieldContext_ActivityReport_AvgGain(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _ActivityReport_TopAGain(ctx context.Context, field graphql.CollectedField, obj *model.ActivityReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ActivityReport_TopAGain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TopAGain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ActivityReport_TopAGain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActivityReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ActivityReport_TopBGain(ctx context.Context, field graphql.CollectedField, obj *model.ActivityReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ActivityReport_TopBGain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TopBGain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ActivityReport_TopBGain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActivityReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ActivityReport_TopCGain(ctx context.Context, field graphql.CollectedField, obj *model.ActivityReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ActivityReport_TopCGain(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TopCGain, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ActivityReport_TopCGain(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActivityReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ActivityReport_FearGreedIndex(ctx context.Context, field graphql.CollectedField, obj *model.ActivityReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ActivityReport_FearGreedIndex(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FearGreedIndex, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ActivityReport_FearGreedIndex(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ActivityReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _HistoricPrices_Pair(ctx context.Context, field graphql.CollectedField, obj *model.HistoricPrices) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_HistoricPrices_Pair(ctx, field)
 	if err != nil {
@@ -1486,6 +1693,14 @@ func (ec *executionContext) fieldContext_Mutation_createActivityReport(ctx conte
 				return ec.fieldContext_ActivityReport_Qty(ctx, field)
 			case "AvgGain":
 				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
+			case "TopAGain":
+				return ec.fieldContext_ActivityReport_TopAGain(ctx, field)
+			case "TopBGain":
+				return ec.fieldContext_ActivityReport_TopBGain(ctx, field)
+			case "TopCGain":
+				return ec.fieldContext_ActivityReport_TopCGain(ctx, field)
+			case "FearGreedIndex":
+				return ec.fieldContext_ActivityReport_FearGreedIndex(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
 		},
@@ -2096,6 +2311,14 @@ func (ec *executionContext) fieldContext_Query_ActivityReport(ctx context.Contex
 				return ec.fieldContext_ActivityReport_Qty(ctx, field)
 			case "AvgGain":
 				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
+			case "TopAGain":
+				return ec.fieldContext_ActivityReport_TopAGain(ctx, field)
+			case "TopBGain":
+				return ec.fieldContext_ActivityReport_TopBGain(ctx, field)
+			case "TopCGain":
+				return ec.fieldContext_ActivityReport_TopCGain(ctx, field)
+			case "FearGreedIndex":
+				return ec.fieldContext_ActivityReport_FearGreedIndex(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
 		},
@@ -2161,6 +2384,14 @@ func (ec *executionContext) fieldContext_Query_ActivityReports(ctx context.Conte
 				return ec.fieldContext_ActivityReport_Qty(ctx, field)
 			case "AvgGain":
 				return ec.fieldContext_ActivityReport_AvgGain(ctx, field)
+			case "TopAGain":
+				return ec.fieldContext_ActivityReport_TopAGain(ctx, field)
+			case "TopBGain":
+				return ec.fieldContext_ActivityReport_TopBGain(ctx, field)
+			case "TopCGain":
+				return ec.fieldContext_ActivityReport_TopCGain(ctx, field)
+			case "FearGreedIndex":
+				return ec.fieldContext_ActivityReport_FearGreedIndex(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ActivityReport", field.Name)
 		},
@@ -5680,7 +5911,7 @@ func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"Timestamp", "Qty", "AvgGain"}
+	fieldsInOrder := [...]string{"Timestamp", "Qty", "AvgGain", "TopAGain", "TopBGain", "TopCGain", "FearGreedIndex"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5714,6 +5945,42 @@ func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context,
 				return it, err
 			}
 			it.AvgGain = data
+		case "TopAGain":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TopAGain"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TopAGain = data
+		case "TopBGain":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TopBGain"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TopBGain = data
+		case "TopCGain":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TopCGain"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TopCGain = data
+		case "FearGreedIndex":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("FearGreedIndex"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FearGreedIndex = data
 		}
 	}
 
@@ -6126,6 +6393,17 @@ func (ec *executionContext) _ActivityReport(ctx context.Context, sel ast.Selecti
 			}
 		case "AvgGain":
 			out.Values[i] = ec._ActivityReport_AvgGain(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "TopAGain":
+			out.Values[i] = ec._ActivityReport_TopAGain(ctx, field, obj)
+		case "TopBGain":
+			out.Values[i] = ec._ActivityReport_TopBGain(ctx, field, obj)
+		case "TopCGain":
+			out.Values[i] = ec._ActivityReport_TopCGain(ctx, field, obj)
+		case "FearGreedIndex":
+			out.Values[i] = ec._ActivityReport_FearGreedIndex(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

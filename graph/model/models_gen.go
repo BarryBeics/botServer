@@ -3,10 +3,14 @@
 package model
 
 type ActivityReport struct {
-	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
-	Timestamp string  `json:"Timestamp"`
-	Qty       int     `json:"Qty"`
-	AvgGain   float64 `json:"AvgGain"`
+	ID             string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	Timestamp      string   `json:"Timestamp"`
+	Qty            int      `json:"Qty"`
+	AvgGain        float64  `json:"AvgGain"`
+	TopAGain       *float64 `json:"TopAGain,omitempty"`
+	TopBGain       *float64 `json:"TopBGain,omitempty"`
+	TopCGain       *float64 `json:"TopCGain,omitempty"`
+	FearGreedIndex int      `json:"FearGreedIndex"`
 }
 
 type HistoricPrices struct {
@@ -15,9 +19,13 @@ type HistoricPrices struct {
 }
 
 type NewActivityReport struct {
-	Timestamp string  `json:"Timestamp"`
-	Qty       int     `json:"Qty"`
-	AvgGain   float64 `json:"AvgGain"`
+	Timestamp      string   `json:"Timestamp"`
+	Qty            int      `json:"Qty"`
+	AvgGain        float64  `json:"AvgGain"`
+	TopAGain       *float64 `json:"TopAGain,omitempty"`
+	TopBGain       *float64 `json:"TopBGain,omitempty"`
+	TopCGain       *float64 `json:"TopCGain,omitempty"`
+	FearGreedIndex int      `json:"FearGreedIndex"`
 }
 
 type NewHistoricPriceInput struct {
