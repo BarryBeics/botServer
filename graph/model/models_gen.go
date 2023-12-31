@@ -63,7 +63,9 @@ type Strategy struct {
 	ShortSMADuration     int      `json:"ShortSMADuration"`
 	WINCounter           *int     `json:"WINCounter,omitempty"`
 	LOSSCounter          *int     `json:"LOSSCounter,omitempty"`
-	TIMEOUTCounter       *int     `json:"TIMEOUTCounter,omitempty"`
+	TIMEOUTGainCounter   *int     `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter   *int     `json:"TIMEOUTLossCounter,omitempty"`
+	ClosingBalance       float64  `json:"ClosingBalance"`
 	MovingAveMomentum    float64  `json:"MovingAveMomentum"`
 	TakeProfitPercentage *float64 `json:"TakeProfitPercentage,omitempty"`
 	StopLossPercentage   *float64 `json:"StopLossPercentage,omitempty"`
@@ -79,7 +81,9 @@ type StrategyInput struct {
 	ShortSMADuration     int     `json:"ShortSMADuration"`
 	WINCounter           *int    `json:"WINCounter,omitempty"`
 	LOSSCounter          *int    `json:"LOSSCounter,omitempty"`
-	TIMEOUTCounter       *int    `json:"TIMEOUTCounter,omitempty"`
+	TIMEOUTGainCounter   *int    `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter   *int    `json:"TIMEOUTLossCounter,omitempty"`
+	ClosingBalance       float64 `json:"ClosingBalance"`
 	MovingAveMomentum    float64 `json:"MovingAveMomentum"`
 	TakeProfitPercentage float64 `json:"TakeProfitPercentage"`
 	StopLossPercentage   float64 `json:"StopLossPercentage"`
@@ -101,8 +105,10 @@ type TradeOutcomeReport struct {
 }
 
 type UpdateCountersInput struct {
-	BotInstanceName string `json:"BotInstanceName"`
-	WINCounter      *bool  `json:"WINCounter,omitempty"`
-	LOSSCounter     *bool  `json:"LOSSCounter,omitempty"`
-	TIMEOUTCounter  *bool  `json:"TIMEOUTCounter,omitempty"`
+	BotInstanceName    string  `json:"BotInstanceName"`
+	WINCounter         *bool   `json:"WINCounter,omitempty"`
+	LOSSCounter        *bool   `json:"LOSSCounter,omitempty"`
+	TIMEOUTGainCounter *bool   `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter *bool   `json:"TIMEOUTLossCounter,omitempty"`
+	ClosingBalance     float64 `json:"ClosingBalance"`
 }

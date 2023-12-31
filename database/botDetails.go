@@ -21,7 +21,9 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		ShortSMADuration:     input.ShortSMADuration,
 		WINCounter:           input.WINCounter,
 		LOSSCounter:          input.LOSSCounter,
-		TIMEOUTCounter:       input.TIMEOUTCounter,
+		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
+		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
+		ClosingBalance:       input.ClosingBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
@@ -51,7 +53,9 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		ShortSMADuration:     input.ShortSMADuration,
 		WINCounter:           input.WINCounter,
 		LOSSCounter:          input.LOSSCounter,
-		TIMEOUTCounter:       input.TIMEOUTCounter,
+		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
+		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
+		ClosingBalance:       input.ClosingBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
@@ -123,7 +127,7 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 }
 
 // UpdateCounters updates WIN, LOSS, and TIMEOUT counters in the database for a specific strategy.
-func (db *DB) UpdateCounters(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUT bool) error {
+func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, closingBalance float64) error {
 	collection := db.client.Database("go_trading_db").Collection("BotDetails")
 
 	filter := bson.D{{"botinstancename", botInstanceName}}
@@ -142,8 +146,14 @@ func (db *DB) UpdateCounters(ctx context.Context, botInstanceName string, increm
 				}
 				return 0
 			}()},
-			{"timeoutcounter", func() int {
-				if incrementTIMEOUT {
+			{"timeoutgaincounter", func() int {
+				if incrementTIMEOUTGain {
+					return 1
+				}
+				return 0
+			}()},
+			{"timeoutlosscounter", func() int {
+				if incrementTIMEOUTLoss {
 					return 1
 				}
 				return 0

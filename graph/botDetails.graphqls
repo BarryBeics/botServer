@@ -9,7 +9,9 @@ extend type Strategy {
   ShortSMADuration: Int!
   WINCounter: Int
   LOSSCounter: Int
-  TIMEOUTCounter: Int
+  TIMEOUTGainCounter: Int
+  TIMEOUTLossCounter: Int
+  ClosingBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float
   StopLossPercentage: Float
@@ -26,7 +28,9 @@ input StrategyInput {
   ShortSMADuration: Int!
   WINCounter: Int
   LOSSCounter: Int
-  TIMEOUTCounter: Int
+  TIMEOUTGainCounter: Int
+  TIMEOUTLossCounter: Int
+  ClosingBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
@@ -39,7 +43,9 @@ input UpdateCountersInput {
   BotInstanceName: String!
   WINCounter: Boolean
   LOSSCounter: Boolean
-  TIMEOUTCounter: Boolean
+  TIMEOUTGainCounter: Boolean
+  TIMEOUTLossCounter: Boolean
+  ClosingBalance: Float!
 }
 
 

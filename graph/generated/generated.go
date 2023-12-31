@@ -94,6 +94,7 @@ type ComplexityRoot struct {
 
 	Strategy struct {
 		BotInstanceName      func(childComplexity int) int
+		ClosingBalance       func(childComplexity int) int
 		CreatedOn            func(childComplexity int) int
 		IncrementsAtr        func(childComplexity int) int
 		LOSSCounter          func(childComplexity int) int
@@ -102,7 +103,8 @@ type ComplexityRoot struct {
 		Owner                func(childComplexity int) int
 		ShortSMADuration     func(childComplexity int) int
 		StopLossPercentage   func(childComplexity int) int
-		TIMEOUTCounter       func(childComplexity int) int
+		TIMEOUTGainCounter   func(childComplexity int) int
+		TIMEOUTLossCounter   func(childComplexity int) int
 		TakeProfitPercentage func(childComplexity int) int
 		TradeDuration        func(childComplexity int) int
 		WINCounter           func(childComplexity int) int
@@ -464,6 +466,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Strategy.BotInstanceName(childComplexity), true
 
+	case "Strategy.ClosingBalance":
+		if e.complexity.Strategy.ClosingBalance == nil {
+			break
+		}
+
+		return e.complexity.Strategy.ClosingBalance(childComplexity), true
+
 	case "Strategy.CreatedOn":
 		if e.complexity.Strategy.CreatedOn == nil {
 			break
@@ -520,12 +529,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Strategy.StopLossPercentage(childComplexity), true
 
-	case "Strategy.TIMEOUTCounter":
-		if e.complexity.Strategy.TIMEOUTCounter == nil {
+	case "Strategy.TIMEOUTGainCounter":
+		if e.complexity.Strategy.TIMEOUTGainCounter == nil {
 			break
 		}
 
-		return e.complexity.Strategy.TIMEOUTCounter(childComplexity), true
+		return e.complexity.Strategy.TIMEOUTGainCounter(childComplexity), true
+
+	case "Strategy.TIMEOUTLossCounter":
+		if e.complexity.Strategy.TIMEOUTLossCounter == nil {
+			break
+		}
+
+		return e.complexity.Strategy.TIMEOUTLossCounter(childComplexity), true
 
 	case "Strategy.TakeProfitPercentage":
 		if e.complexity.Strategy.TakeProfitPercentage == nil {
@@ -740,7 +756,9 @@ extend type Strategy {
   ShortSMADuration: Int!
   WINCounter: Int
   LOSSCounter: Int
-  TIMEOUTCounter: Int
+  TIMEOUTGainCounter: Int
+  TIMEOUTLossCounter: Int
+  ClosingBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float
   StopLossPercentage: Float
@@ -757,7 +775,9 @@ input StrategyInput {
   ShortSMADuration: Int!
   WINCounter: Int
   LOSSCounter: Int
-  TIMEOUTCounter: Int
+  TIMEOUTGainCounter: Int
+  TIMEOUTLossCounter: Int
+  ClosingBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
@@ -770,7 +790,9 @@ input UpdateCountersInput {
   BotInstanceName: String!
   WINCounter: Boolean
   LOSSCounter: Boolean
-  TIMEOUTCounter: Boolean
+  TIMEOUTGainCounter: Boolean
+  TIMEOUTLossCounter: Boolean
+  ClosingBalance: Float!
 }
 
 
@@ -1846,8 +1868,12 @@ func (ec *executionContext) fieldContext_Mutation_createStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_WINCounter(ctx, field)
 			case "LOSSCounter":
 				return ec.fieldContext_Strategy_LOSSCounter(ctx, field)
-			case "TIMEOUTCounter":
-				return ec.fieldContext_Strategy_TIMEOUTCounter(ctx, field)
+			case "TIMEOUTGainCounter":
+				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
+			case "TIMEOUTLossCounter":
+				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
+			case "ClosingBalance":
+				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -1926,8 +1952,12 @@ func (ec *executionContext) fieldContext_Mutation_updateStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_WINCounter(ctx, field)
 			case "LOSSCounter":
 				return ec.fieldContext_Strategy_LOSSCounter(ctx, field)
-			case "TIMEOUTCounter":
-				return ec.fieldContext_Strategy_TIMEOUTCounter(ctx, field)
+			case "TIMEOUTGainCounter":
+				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
+			case "TIMEOUTLossCounter":
+				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
+			case "ClosingBalance":
+				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -2746,8 +2776,12 @@ func (ec *executionContext) fieldContext_Query_getStrategyByName(ctx context.Con
 				return ec.fieldContext_Strategy_WINCounter(ctx, field)
 			case "LOSSCounter":
 				return ec.fieldContext_Strategy_LOSSCounter(ctx, field)
-			case "TIMEOUTCounter":
-				return ec.fieldContext_Strategy_TIMEOUTCounter(ctx, field)
+			case "TIMEOUTGainCounter":
+				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
+			case "TIMEOUTLossCounter":
+				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
+			case "ClosingBalance":
+				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -2826,8 +2860,12 @@ func (ec *executionContext) fieldContext_Query_getAllStrategies(ctx context.Cont
 				return ec.fieldContext_Strategy_WINCounter(ctx, field)
 			case "LOSSCounter":
 				return ec.fieldContext_Strategy_LOSSCounter(ctx, field)
-			case "TIMEOUTCounter":
-				return ec.fieldContext_Strategy_TIMEOUTCounter(ctx, field)
+			case "TIMEOUTGainCounter":
+				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
+			case "TIMEOUTLossCounter":
+				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
+			case "ClosingBalance":
+				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -3442,8 +3480,8 @@ func (ec *executionContext) fieldContext_Strategy_LOSSCounter(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Strategy_TIMEOUTCounter(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Strategy_TIMEOUTCounter(ctx, field)
+func (ec *executionContext) _Strategy_TIMEOUTGainCounter(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3456,7 +3494,7 @@ func (ec *executionContext) _Strategy_TIMEOUTCounter(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.TIMEOUTCounter, nil
+		return obj.TIMEOUTGainCounter, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3470,7 +3508,7 @@ func (ec *executionContext) _Strategy_TIMEOUTCounter(ctx context.Context, field 
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Strategy_TIMEOUTCounter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Strategy_TIMEOUTGainCounter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Strategy",
 		Field:      field,
@@ -3478,6 +3516,91 @@ func (ec *executionContext) fieldContext_Strategy_TIMEOUTCounter(ctx context.Con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Strategy_TIMEOUTLossCounter(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TIMEOUTLossCounter, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Strategy_TIMEOUTLossCounter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Strategy",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Strategy_ClosingBalance(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_ClosingBalance(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClosingBalance, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Strategy_ClosingBalance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Strategy",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6171,7 +6294,7 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTCounter", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "Owner", "CreatedOn"}
+	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "ClosingBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "Owner", "CreatedOn"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6241,15 +6364,33 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 				return it, err
 			}
 			it.LOSSCounter = data
-		case "TIMEOUTCounter":
+		case "TIMEOUTGainCounter":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TIMEOUTCounter"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TIMEOUTGainCounter"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TIMEOUTCounter = data
+			it.TIMEOUTGainCounter = data
+		case "TIMEOUTLossCounter":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TIMEOUTLossCounter"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TIMEOUTLossCounter = data
+		case "ClosingBalance":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ClosingBalance"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClosingBalance = data
 		case "MovingAveMomentum":
 			var err error
 
@@ -6308,7 +6449,7 @@ func (ec *executionContext) unmarshalInputUpdateCountersInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "WINCounter", "LOSSCounter", "TIMEOUTCounter"}
+	fieldsInOrder := [...]string{"BotInstanceName", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "ClosingBalance"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6342,15 +6483,33 @@ func (ec *executionContext) unmarshalInputUpdateCountersInput(ctx context.Contex
 				return it, err
 			}
 			it.LOSSCounter = data
-		case "TIMEOUTCounter":
+		case "TIMEOUTGainCounter":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TIMEOUTCounter"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TIMEOUTGainCounter"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TIMEOUTCounter = data
+			it.TIMEOUTGainCounter = data
+		case "TIMEOUTLossCounter":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TIMEOUTLossCounter"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TIMEOUTLossCounter = data
+		case "ClosingBalance":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ClosingBalance"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClosingBalance = data
 		}
 	}
 
@@ -6927,8 +7086,15 @@ func (ec *executionContext) _Strategy(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Strategy_WINCounter(ctx, field, obj)
 		case "LOSSCounter":
 			out.Values[i] = ec._Strategy_LOSSCounter(ctx, field, obj)
-		case "TIMEOUTCounter":
-			out.Values[i] = ec._Strategy_TIMEOUTCounter(ctx, field, obj)
+		case "TIMEOUTGainCounter":
+			out.Values[i] = ec._Strategy_TIMEOUTGainCounter(ctx, field, obj)
+		case "TIMEOUTLossCounter":
+			out.Values[i] = ec._Strategy_TIMEOUTLossCounter(ctx, field, obj)
+		case "ClosingBalance":
+			out.Values[i] = ec._Strategy_ClosingBalance(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "MovingAveMomentum":
 			out.Values[i] = ec._Strategy_MovingAveMomentum(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
