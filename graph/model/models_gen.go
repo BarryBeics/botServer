@@ -2,12 +2,15 @@
 
 package model
 
-
 type ActivityReport struct {
-	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
-	Timestamp string  `json:"Timestamp"`
-	Qty       int     `json:"Qty"`
-	AvgGain   float64 `json:"AvgGain"`
+	ID             string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	Timestamp      string   `json:"Timestamp"`
+	Qty            int      `json:"Qty"`
+	AvgGain        float64  `json:"AvgGain"`
+	TopAGain       *float64 `json:"TopAGain,omitempty"`
+	TopBGain       *float64 `json:"TopBGain,omitempty"`
+	TopCGain       *float64 `json:"TopCGain,omitempty"`
+	FearGreedIndex int      `json:"FearGreedIndex"`
 }
 
 type HistoricPrices struct {
@@ -16,9 +19,13 @@ type HistoricPrices struct {
 }
 
 type NewActivityReport struct {
-	Timestamp string  `json:"Timestamp"`
-	Qty       int     `json:"Qty"`
-	AvgGain   float64 `json:"AvgGain"`
+	Timestamp      string   `json:"Timestamp"`
+	Qty            int      `json:"Qty"`
+	AvgGain        float64  `json:"AvgGain"`
+	TopAGain       *float64 `json:"TopAGain,omitempty"`
+	TopBGain       *float64 `json:"TopBGain,omitempty"`
+	TopCGain       *float64 `json:"TopCGain,omitempty"`
+	FearGreedIndex int      `json:"FearGreedIndex"`
 }
 
 type NewHistoricPriceInput struct {
@@ -27,11 +34,15 @@ type NewHistoricPriceInput struct {
 }
 
 type NewTradeOutcomeReport struct {
-	Timestamp    string  `json:"Timestamp"`
-	OpeningPrice float64 `json:"OpeningPrice"`
-	ClosePrice   float64 `json:"ClosePrice"`
-	Symbol       string  `json:"Symbol"`
-	Outcome      string  `json:"Outcome"`
+	Timestamp        string  `json:"Timestamp"`
+	BotName          string  `json:"BotName"`
+	PercentageChange float64 `json:"PercentageChange"`
+	Balance          float64 `json:"Balance"`
+	Symbol           string  `json:"Symbol"`
+	Outcome          string  `json:"Outcome"`
+	ElapsedTime      int     `json:"ElapsedTime"`
+	FearGreedIndex   int     `json:"FearGreedIndex"`
+	MarketStatus     string  `json:"MarketStatus"`
 }
 
 type Pair struct {
@@ -52,7 +63,9 @@ type Strategy struct {
 	ShortSMADuration     int      `json:"ShortSMADuration"`
 	WINCounter           *int     `json:"WINCounter,omitempty"`
 	LOSSCounter          *int     `json:"LOSSCounter,omitempty"`
-	TIMEOUTCounter       *int     `json:"TIMEOUTCounter,omitempty"`
+	TIMEOUTGainCounter   *int     `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter   *int     `json:"TIMEOUTLossCounter,omitempty"`
+	ClosingBalance       float64  `json:"ClosingBalance"`
 	MovingAveMomentum    float64  `json:"MovingAveMomentum"`
 	TakeProfitPercentage *float64 `json:"TakeProfitPercentage,omitempty"`
 	StopLossPercentage   *float64 `json:"StopLossPercentage,omitempty"`
@@ -68,7 +81,9 @@ type StrategyInput struct {
 	ShortSMADuration     int     `json:"ShortSMADuration"`
 	WINCounter           *int    `json:"WINCounter,omitempty"`
 	LOSSCounter          *int    `json:"LOSSCounter,omitempty"`
-	TIMEOUTCounter       *int    `json:"TIMEOUTCounter,omitempty"`
+	TIMEOUTGainCounter   *int    `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter   *int    `json:"TIMEOUTLossCounter,omitempty"`
+	ClosingBalance       float64 `json:"ClosingBalance"`
 	MovingAveMomentum    float64 `json:"MovingAveMomentum"`
 	TakeProfitPercentage float64 `json:"TakeProfitPercentage"`
 	StopLossPercentage   float64 `json:"StopLossPercentage"`
@@ -77,10 +92,23 @@ type StrategyInput struct {
 }
 
 type TradeOutcomeReport struct {
-	ID        string  `json:"_id,omitempty" bson:"_id,omitempty"`
-	Timestamp    string  `json:"Timestamp"`
-	OpeningPrice float64 `json:"OpeningPrice"`
-	ClosePrice   float64 `json:"ClosePrice"`
-	Symbol       string  `json:"Symbol"`
-	Outcome      string  `json:"Outcome"`
+	ID               string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	Timestamp        string  `json:"Timestamp"`
+	BotName          string  `json:"BotName"`
+	PercentageChange float64 `json:"PercentageChange"`
+	Balance          float64 `json:"Balance"`
+	Symbol           string  `json:"Symbol"`
+	Outcome          string  `json:"Outcome"`
+	ElapsedTime      int     `json:"ElapsedTime"`
+	FearGreedIndex   int     `json:"FearGreedIndex"`
+	MarketStatus     string  `json:"MarketStatus"`
+}
+
+type UpdateCountersInput struct {
+	BotInstanceName    string  `json:"BotInstanceName"`
+	WINCounter         *bool   `json:"WINCounter,omitempty"`
+	LOSSCounter        *bool   `json:"LOSSCounter,omitempty"`
+	TIMEOUTGainCounter *bool   `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter *bool   `json:"TIMEOUTLossCounter,omitempty"`
+	ClosingBalance     float64 `json:"ClosingBalance"`
 }

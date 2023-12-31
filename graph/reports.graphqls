@@ -3,29 +3,45 @@ type ActivityReport {
   Timestamp: String!
   Qty: Int!
   AvgGain: Float!
+  TopAGain: Float
+  TopBGain: Float
+  TopCGain: Float
+  FearGreedIndex: Int!
 }
 
 input NewActivityReport {
   Timestamp: String!
   Qty: Int!
   AvgGain: Float!
+  TopAGain: Float
+  TopBGain: Float
+  TopCGain: Float
+  FearGreedIndex: Int!
 }
 
 type TradeOutcomeReport {
   _id: ID!
   Timestamp: String!
-  OpeningPrice: Float!
-  ClosePrice: Float!
+  BotName: String!
+  PercentageChange: Float!
+  Balance: Float!
   Symbol: String!
   Outcome: String!
+  ElapsedTime: Int!
+  FearGreedIndex: Int!
+  MarketStatus: String!
 }
 
 input NewTradeOutcomeReport {
   Timestamp: String!
-  OpeningPrice: Float!
-  ClosePrice: Float!
+  BotName: String!
+  PercentageChange: Float!
+  Balance: Float!
   Symbol: String!
   Outcome: String!
+  ElapsedTime: Int!
+  FearGreedIndex: Int!
+  MarketStatus: String!
 }
 
 
@@ -38,6 +54,8 @@ type Query {
   ActivityReport(_id: ID!): ActivityReport!
   ActivityReports: [ActivityReport!]!
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
+  TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
+  TradeOutcomesInFocus(BotName: String!, MarketStatus: String!, limit: Int): [TradeOutcomeReport!]!
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 

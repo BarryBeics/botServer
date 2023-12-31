@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (db *DB) SaveActivityReport(input *model.NewActivityReport) *model.ActivityReport {
@@ -20,10 +21,14 @@ func (db *DB) SaveActivityReport(input *model.NewActivityReport) *model.Activity
 		log.Error().Err(err).Msg("Error save func:")
 	}
 	return &model.ActivityReport{
-		ID:        res.InsertedID.(primitive.ObjectID).Hex(),
-		Timestamp: input.Timestamp,
-		Qty:       input.Qty,
-		AvgGain:   input.AvgGain,
+		ID:             res.InsertedID.(primitive.ObjectID).Hex(),
+		Timestamp:      input.Timestamp,
+		Qty:            input.Qty,
+		AvgGain:        input.AvgGain,
+		TopAGain:       input.TopAGain,
+		TopBGain:       input.TopBGain,
+		TopCGain:       input.TopCGain,
+		FearGreedIndex: input.FearGreedIndex,
 	}
 }
 
@@ -70,12 +75,16 @@ func (db *DB) SaveTradeOutcomeReport(input *model.NewTradeOutcomeReport) *model.
 		log.Error().Err(err).Msg("Error save func:")
 	}
 	return &model.TradeOutcomeReport{
-		ID:           res.InsertedID.(primitive.ObjectID).Hex(),
-		Timestamp:    input.Timestamp,
-		OpeningPrice: input.OpeningPrice,
-		ClosePrice:   input.ClosePrice,
-		Symbol:       input.Symbol,
-		Outcome:      input.Outcome,
+		ID:               res.InsertedID.(primitive.ObjectID).Hex(),
+		Timestamp:        input.Timestamp,
+		BotName:          input.BotName,
+		PercentageChange: input.PercentageChange,
+		Balance:          input.Balance,
+		Symbol:           input.Symbol,
+		Outcome:          input.Outcome,
+		ElapsedTime:      input.ElapsedTime,
+		FearGreedIndex:   input.FearGreedIndex,
+		MarketStatus:     input.MarketStatus,
 	}
 }
 
@@ -111,4 +120,57 @@ func (db *DB) AllTradeOutcomeReports() []*model.TradeOutcomeReport {
 		TradeOutcomeReports = append(TradeOutcomeReports, TradeOutcomeReport)
 	}
 	return TradeOutcomeReports
+}
+
+// TradeOutcomeReportsByBot retrieves trade outcome reports based on the BotName.
+func (db *DB) TradeOutcomeReportsByBotName(ctx context.Context, botName string) ([]*model.TradeOutcomeReport, error) {
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+
+	filter := bson.D{{"botname", botName}}
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		log.Error().Err(err).Msg("Error TradeOutcomeReportsByBot func:")
+		return nil, err
+	}
+
+	var tradeOutcomeReports []*model.TradeOutcomeReport
+	for cur.Next(ctx) {
+		var tradeOutcomeReport *model.TradeOutcomeReport
+		err := cur.Decode(&tradeOutcomeReport)
+		if err != nil {
+			log.Error().Err(err).Msg("Error Decode func:")
+		}
+		tradeOutcomeReports = append(tradeOutcomeReports, tradeOutcomeReport)
+	}
+	return tradeOutcomeReports, nil
+}
+
+// TradeOutcomeReportsByBotNameAndMarketStatus retrieves trade outcome reports based on the BotName and MarketStatus with a limit.
+func (db *DB) TradeOutcomeReportsByBotNameAndMarketStatus(ctx context.Context, botName string, marketStatus string, limit int) ([]*model.TradeOutcomeReport, error) {
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+
+	filter := bson.D{
+		{"botname", botName},
+		{"marketstatus", marketStatus},
+	}
+
+	findOptions := options.Find().SetLimit(int64(limit))
+
+	cur, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		log.Error().Err(err).Msg("Error TradeOutcomeReportsByBotName func:")
+		return nil, err
+	}
+
+	var tradeOutcomeReports []*model.TradeOutcomeReport
+	for cur.Next(ctx) {
+		var tradeOutcomeReport *model.TradeOutcomeReport
+		err := cur.Decode(&tradeOutcomeReport)
+		if err != nil {
+			log.Error().Err(err).Msg("Error Decode func:")
+		}
+		tradeOutcomeReports = append(tradeOutcomeReports, tradeOutcomeReport)
+	}
+	return tradeOutcomeReports, nil
 }

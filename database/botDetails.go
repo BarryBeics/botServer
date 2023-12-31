@@ -21,7 +21,9 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		ShortSMADuration:     input.ShortSMADuration,
 		WINCounter:           input.WINCounter,
 		LOSSCounter:          input.LOSSCounter,
-		TIMEOUTCounter:       input.TIMEOUTCounter,
+		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
+		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
+		ClosingBalance:       input.ClosingBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
@@ -51,7 +53,9 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		ShortSMADuration:     input.ShortSMADuration,
 		WINCounter:           input.WINCounter,
 		LOSSCounter:          input.LOSSCounter,
-		TIMEOUTCounter:       input.TIMEOUTCounter,
+		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
+		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
+		ClosingBalance:       input.ClosingBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
@@ -120,4 +124,48 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 	}
 
 	return strategies, nil
+}
+
+// UpdateCounters updates WIN, LOSS, and TIMEOUT counters in the database for a specific strategy.
+func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, closingBalance float64) error {
+	collection := db.client.Database("go_trading_db").Collection("BotDetails")
+
+	filter := bson.D{{"botinstancename", botInstanceName}}
+
+	update := bson.D{
+		{"$inc", bson.D{
+			{"wincounter", func() int {
+				if incrementWIN {
+					return 1
+				}
+				return 0
+			}()},
+			{"losscounter", func() int {
+				if incrementLOSS {
+					return 1
+				}
+				return 0
+			}()},
+			{"timeoutgaincounter", func() int {
+				if incrementTIMEOUTGain {
+					return 1
+				}
+				return 0
+			}()},
+			{"timeoutlosscounter", func() int {
+				if incrementTIMEOUTLoss {
+					return 1
+				}
+				return 0
+			}()},
+		}},
+	}
+
+	_, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Error().Err(err).Msg("Error updating counters in the database:")
+		return err
+	}
+
+	return nil
 }
