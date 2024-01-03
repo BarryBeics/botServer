@@ -25,7 +25,7 @@ func (r *mutationResolver) CreateHistoricPrices(ctx context.Context, input *mode
 }
 
 // DeleteHistoricPrices is the resolver for the deleteHistoricPrices field.
-func (r *mutationResolver) DeleteHistoricPrices(ctx context.Context, timestamp string) (bool, error) {
+func (r *mutationResolver) DeleteHistoricPrices(ctx context.Context, timestamp int) (bool, error) {
 	err := db.DeleteHistoricPricesByTimestamp(ctx, timestamp)
 
 	if err != nil {
@@ -65,7 +65,7 @@ func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string, lim
 }
 
 // GetHistoricPricesAtTimestamp is the resolver for the getHistoricPricesAtTimestamp field.
-func (r *queryResolver) GetHistoricPricesAtTimestamp(ctx context.Context, timestamp string) ([]*model.HistoricPrices, error) {
+func (r *queryResolver) GetHistoricPricesAtTimestamp(ctx context.Context, timestamp int) ([]*model.HistoricPrices, error) {
 	historicPrices, err := db.HistoricPricesAtTimestamp(timestamp)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting historic prices at position")

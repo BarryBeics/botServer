@@ -28,7 +28,7 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
 		Owner:                &input.Owner,
-		CreatedOn:            &input.CreatedOn,
+		CreatedOn:            input.CreatedOn,
 	}
 
 	_, err := collection.InsertOne(ctx, strategy)
@@ -60,7 +60,7 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
 		Owner:                &input.Owner,
-		CreatedOn:            &input.CreatedOn,
+		CreatedOn:            input.CreatedOn,
 	}
 
 	filter := bson.D{{"botinstancename", botInstanceName}}
@@ -126,7 +126,7 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 	return strategies, nil
 }
 
-// UpdateCounters updates WIN, LOSS, and TIMEOUT counters in the database for a specific strategy.
+// UpdateCountersAndBalance updates WIN, LOSS, TIMEOUT counters, and closingBalance in the database for a specific strategy.
 func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, closingBalance float64) error {
 	collection := db.client.Database("go_trading_db").Collection("BotDetails")
 
@@ -159,11 +159,14 @@ func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName stri
 				return 0
 			}()},
 		}},
+		{"$set", bson.D{
+			{"closingbalance", closingBalance},
+		}},
 	}
 
 	_, err := collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		log.Error().Err(err).Msg("Error updating counters in the database:")
+		log.Error().Err(err).Msg("Error updating counters and closing balance in the database:")
 		return err
 	}
 

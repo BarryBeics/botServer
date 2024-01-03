@@ -94,13 +94,13 @@ func (db *DB) AllHistoricPrices(limit int) ([]model.HistoricPrices, error) {
 }
 
 // HistoricPricesAtTimestamp fetches historic prices at a specific timestamp.
-func (db *DB) HistoricPricesAtTimestamp(timestamp string) ([]model.HistoricPrices, error) {
+func (db *DB) HistoricPricesAtTimestamp(timestamp int) ([]model.HistoricPrices, error) {
 	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Filter by timestamp
-	filter := bson.M{"timestamp": timestamp}
+	filter := bson.M{"Timestamp": timestamp}
 
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
@@ -166,7 +166,7 @@ func (db *DB) GetUniqueTimestampCount(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (db *DB) DeleteHistoricPricesByTimestamp(ctx context.Context, timestamp string) error {
+func (db *DB) DeleteHistoricPricesByTimestamp(ctx context.Context, timestamp int) error {
 	collection := db.client.Database("go_trading_db").Collection("HistoricPrices")
 
 	// Define a filter to match documents with the specified timestamp
