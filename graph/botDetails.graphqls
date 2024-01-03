@@ -16,7 +16,7 @@ extend type Strategy {
   TakeProfitPercentage: Float
   StopLossPercentage: Float
   Owner: String
-  CreatedOn: String
+  CreatedOn: Int!
 }
 
 # New input type for creating or updating a strategy
@@ -35,7 +35,7 @@ input StrategyInput {
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
   Owner: String!
-  CreatedOn: String!
+  CreatedOn: Int!
 }
 
 # New input type for updating counters

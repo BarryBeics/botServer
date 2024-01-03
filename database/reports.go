@@ -50,19 +50,22 @@ func (db *DB) AllActivityReports() []*model.ActivityReport {
 	collection := db.client.Database("go_trading_db").Collection("ActivityReports")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+
 	cur, err := collection.Find(ctx, bson.D{})
 	if err != nil {
-		log.Error().Err(err).Msg("Error All func:")
+		log.Error().Err(err).Msg("Error querying database:")
 	}
+
 	var ActivityReports []*model.ActivityReport
 	for cur.Next(ctx) {
-		var ActivityReport *model.ActivityReport
+		var ActivityReport model.ActivityReport
 		err := cur.Decode(&ActivityReport)
 		if err != nil {
-			log.Error().Err(err).Msg("Error Decode func:")
+			log.Error().Err(err).Msg("Error decoding document:")
 		}
-		ActivityReports = append(ActivityReports, ActivityReport)
+		ActivityReports = append(ActivityReports, &ActivityReport)
 	}
+
 	return ActivityReports
 }
 

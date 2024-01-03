@@ -67,7 +67,7 @@ type ComplexityRoot struct {
 		CreateHistoricPrices     func(childComplexity int, input *model.NewHistoricPriceInput) int
 		CreateStrategy           func(childComplexity int, input model.StrategyInput) int
 		CreateTradeOutcomeReport func(childComplexity int, input *model.NewTradeOutcomeReport) int
-		DeleteHistoricPrices     func(childComplexity int, timestamp string) int
+		DeleteHistoricPrices     func(childComplexity int, timestamp int) int
 		DeleteStrategy           func(childComplexity int, botInstanceName string) int
 		UpdateCounters           func(childComplexity int, input model.UpdateCountersInput) int
 		UpdateStrategy           func(childComplexity int, botInstanceName string, input model.StrategyInput) int
@@ -83,7 +83,7 @@ type ComplexityRoot struct {
 		ActivityReports              func(childComplexity int) int
 		GetAllStrategies             func(childComplexity int) int
 		GetHistoricPrice             func(childComplexity int, symbol string, limit *int) int
-		GetHistoricPricesAtTimestamp func(childComplexity int, timestamp string) int
+		GetHistoricPricesAtTimestamp func(childComplexity int, timestamp int) int
 		GetStrategyByName            func(childComplexity int, botInstanceName string) int
 		GetUniqueTimestampCount      func(childComplexity int) int
 		TradeOutcomeReport           func(childComplexity int, id string) int
@@ -132,7 +132,7 @@ type MutationResolver interface {
 	DeleteStrategy(ctx context.Context, botInstanceName string) (*bool, error)
 	UpdateCounters(ctx context.Context, input model.UpdateCountersInput) (*bool, error)
 	CreateHistoricPrices(ctx context.Context, input *model.NewHistoricPriceInput) ([]*model.HistoricPrices, error)
-	DeleteHistoricPrices(ctx context.Context, timestamp string) (bool, error)
+	DeleteHistoricPrices(ctx context.Context, timestamp int) (bool, error)
 }
 type QueryResolver interface {
 	ActivityReport(ctx context.Context, id string) (*model.ActivityReport, error)
@@ -144,7 +144,7 @@ type QueryResolver interface {
 	GetStrategyByName(ctx context.Context, botInstanceName string) (*model.Strategy, error)
 	GetAllStrategies(ctx context.Context) ([]*model.Strategy, error)
 	GetHistoricPrice(ctx context.Context, symbol string, limit *int) ([]*model.HistoricPrices, error)
-	GetHistoricPricesAtTimestamp(ctx context.Context, timestamp string) ([]*model.HistoricPrices, error)
+	GetHistoricPricesAtTimestamp(ctx context.Context, timestamp int) ([]*model.HistoricPrices, error)
 	GetUniqueTimestampCount(ctx context.Context) (int, error)
 }
 
@@ -230,7 +230,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HistoricPrices.Pair(childComplexity), true
 
-	case "HistoricPrices.timestamp":
+	case "HistoricPrices.Timestamp":
 		if e.complexity.HistoricPrices.Timestamp == nil {
 			break
 		}
@@ -295,7 +295,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteHistoricPrices(childComplexity, args["timestamp"].(string)), true
+		return e.complexity.Mutation.DeleteHistoricPrices(childComplexity, args["Timestamp"].(int)), true
 
 	case "Mutation.deleteStrategy":
 		if e.complexity.Mutation.DeleteStrategy == nil {
@@ -395,7 +395,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetHistoricPricesAtTimestamp(childComplexity, args["timestamp"].(string)), true
+		return e.complexity.Query.GetHistoricPricesAtTimestamp(childComplexity, args["Timestamp"].(int)), true
 
 	case "Query.getStrategyByName":
 		if e.complexity.Query.GetStrategyByName == nil {
@@ -763,7 +763,7 @@ extend type Strategy {
   TakeProfitPercentage: Float
   StopLossPercentage: Float
   Owner: String
-  CreatedOn: String
+  CreatedOn: Int!
 }
 
 # New input type for creating or updating a strategy
@@ -782,7 +782,7 @@ input StrategyInput {
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
   Owner: String!
-  CreatedOn: String!
+  CreatedOn: Int!
 }
 
 # New input type for updating counters
@@ -812,7 +812,7 @@ extend type Mutation {
 `, BuiltIn: false},
 	{Name: "../priceData.graphqls", Input: `type HistoricPrices {
   Pair: [Pair!]
-  timestamp: String!
+  Timestamp: Int!
 }
 
 type Pair {
@@ -822,7 +822,7 @@ type Pair {
 
 input NewHistoricPriceInput {
   pairs: [PairInput!]!
-  timestamp: String!
+  Timestamp: Int!
 }
 
 input PairInput {
@@ -835,7 +835,7 @@ extend type Mutation {
   createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
 
   "Deletes all prices data for the matching given timestamp"
-  deleteHistoricPrices(timestamp: String!): Boolean!
+  deleteHistoricPrices(Timestamp: Int!): Boolean!
 }
 
 extend type Query {
@@ -843,7 +843,7 @@ extend type Query {
   getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
 
   "Gets all prices data at a given timestamp"
-  getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+  getHistoricPricesAtTimestamp(Timestamp: Int!): [HistoricPrices!]!
 
   "Returns a count of timestamps in the DB"
   getUniqueTimestampCount: Int!
@@ -852,7 +852,7 @@ extend type Query {
 `, BuiltIn: false},
 	{Name: "../reports.graphqls", Input: `type ActivityReport {
   _id: ID!
-  Timestamp: String!
+  Timestamp: Int!
   Qty: Int!
   AvgGain: Float!
   TopAGain: Float
@@ -862,7 +862,7 @@ extend type Query {
 }
 
 input NewActivityReport {
-  Timestamp: String!
+  Timestamp: Int!
   Qty: Int!
   AvgGain: Float!
   TopAGain: Float
@@ -873,7 +873,7 @@ input NewActivityReport {
 
 type TradeOutcomeReport {
   _id: ID!
-  Timestamp: String!
+  Timestamp: Int!
   BotName: String!
   PercentageChange: Float!
   Balance: Float!
@@ -885,7 +885,7 @@ type TradeOutcomeReport {
 }
 
 input NewTradeOutcomeReport {
-  Timestamp: String!
+  Timestamp: Int!
   BotName: String!
   PercentageChange: Float!
   Balance: Float!
@@ -983,15 +983,15 @@ func (ec *executionContext) field_Mutation_createTradeOutcomeReport_args(ctx con
 func (ec *executionContext) field_Mutation_deleteHistoricPrices_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["timestamp"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 int
+	if tmp, ok := rawArgs["Timestamp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["timestamp"] = arg0
+	args["Timestamp"] = arg0
 	return args, nil
 }
 
@@ -1169,15 +1169,15 @@ func (ec *executionContext) field_Query_getHistoricPrice_args(ctx context.Contex
 func (ec *executionContext) field_Query_getHistoricPricesAtTimestamp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["timestamp"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 int
+	if tmp, ok := rawArgs["Timestamp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["timestamp"] = arg0
+	args["Timestamp"] = arg0
 	return args, nil
 }
 
@@ -1304,9 +1304,9 @@ func (ec *executionContext) _ActivityReport_Timestamp(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ActivityReport_Timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1316,7 +1316,7 @@ func (ec *executionContext) fieldContext_ActivityReport_Timestamp(ctx context.Co
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1624,8 +1624,8 @@ func (ec *executionContext) fieldContext_HistoricPrices_Pair(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _HistoricPrices_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.HistoricPrices) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_HistoricPrices_timestamp(ctx, field)
+func (ec *executionContext) _HistoricPrices_Timestamp(ctx context.Context, field graphql.CollectedField, obj *model.HistoricPrices) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HistoricPrices_Timestamp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1650,19 +1650,19 @@ func (ec *executionContext) _HistoricPrices_timestamp(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_HistoricPrices_timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_HistoricPrices_Timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "HistoricPrices",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2131,8 +2131,8 @@ func (ec *executionContext) fieldContext_Mutation_createHistoricPrices(ctx conte
 			switch field.Name {
 			case "Pair":
 				return ec.fieldContext_HistoricPrices_Pair(ctx, field)
-			case "timestamp":
-				return ec.fieldContext_HistoricPrices_timestamp(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_HistoricPrices_Timestamp(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type HistoricPrices", field.Name)
 		},
@@ -2165,7 +2165,7 @@ func (ec *executionContext) _Mutation_deleteHistoricPrices(ctx context.Context, 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteHistoricPrices(rctx, fc.Args["timestamp"].(string))
+		return ec.resolvers.Mutation().DeleteHistoricPrices(rctx, fc.Args["Timestamp"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2924,8 +2924,8 @@ func (ec *executionContext) fieldContext_Query_getHistoricPrice(ctx context.Cont
 			switch field.Name {
 			case "Pair":
 				return ec.fieldContext_HistoricPrices_Pair(ctx, field)
-			case "timestamp":
-				return ec.fieldContext_HistoricPrices_timestamp(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_HistoricPrices_Timestamp(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type HistoricPrices", field.Name)
 		},
@@ -2958,7 +2958,7 @@ func (ec *executionContext) _Query_getHistoricPricesAtTimestamp(ctx context.Cont
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetHistoricPricesAtTimestamp(rctx, fc.Args["timestamp"].(string))
+		return ec.resolvers.Query().GetHistoricPricesAtTimestamp(rctx, fc.Args["Timestamp"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2985,8 +2985,8 @@ func (ec *executionContext) fieldContext_Query_getHistoricPricesAtTimestamp(ctx 
 			switch field.Name {
 			case "Pair":
 				return ec.fieldContext_HistoricPrices_Pair(ctx, field)
-			case "timestamp":
-				return ec.fieldContext_HistoricPrices_timestamp(ctx, field)
+			case "Timestamp":
+				return ec.fieldContext_HistoricPrices_Timestamp(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type HistoricPrices", field.Name)
 		},
@@ -3794,11 +3794,14 @@ func (ec *executionContext) _Strategy_CreatedOn(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Strategy_CreatedOn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3808,7 +3811,7 @@ func (ec *executionContext) fieldContext_Strategy_CreatedOn(ctx context.Context,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3884,9 +3887,9 @@ func (ec *executionContext) _TradeOutcomeReport_Timestamp(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TradeOutcomeReport_Timestamp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3896,7 +3899,7 @@ func (ec *executionContext) fieldContext_TradeOutcomeReport_Timestamp(ctx contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6045,7 +6048,7 @@ func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6117,7 +6120,7 @@ func (ec *executionContext) unmarshalInputNewHistoricPriceInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"pairs", "timestamp"}
+	fieldsInOrder := [...]string{"pairs", "Timestamp"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6133,11 +6136,11 @@ func (ec *executionContext) unmarshalInputNewHistoricPriceInput(ctx context.Cont
 				return it, err
 			}
 			it.Pairs = data
-		case "timestamp":
+		case "Timestamp":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6166,7 +6169,7 @@ func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6431,7 +6434,7 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("CreatedOn"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6602,8 +6605,8 @@ func (ec *executionContext) _HistoricPrices(ctx context.Context, sel ast.Selecti
 			out.Values[i] = graphql.MarshalString("HistoricPrices")
 		case "Pair":
 			out.Values[i] = ec._HistoricPrices_Pair(ctx, field, obj)
-		case "timestamp":
-			out.Values[i] = ec._HistoricPrices_timestamp(ctx, field, obj)
+		case "Timestamp":
+			out.Values[i] = ec._HistoricPrices_Timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7108,6 +7111,9 @@ func (ec *executionContext) _Strategy(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Strategy_Owner(ctx, field, obj)
 		case "CreatedOn":
 			out.Values[i] = ec._Strategy_CreatedOn(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

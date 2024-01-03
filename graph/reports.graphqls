@@ -1,6 +1,6 @@
 type ActivityReport {
   _id: ID!
-  Timestamp: String!
+  Timestamp: Int!
   Qty: Int!
   AvgGain: Float!
   TopAGain: Float
@@ -10,7 +10,7 @@ type ActivityReport {
 }
 
 input NewActivityReport {
-  Timestamp: String!
+  Timestamp: Int!
   Qty: Int!
   AvgGain: Float!
   TopAGain: Float
@@ -21,7 +21,7 @@ input NewActivityReport {
 
 type TradeOutcomeReport {
   _id: ID!
-  Timestamp: String!
+  Timestamp: Int!
   BotName: String!
   PercentageChange: Float!
   Balance: Float!
@@ -33,7 +33,7 @@ type TradeOutcomeReport {
 }
 
 input NewTradeOutcomeReport {
-  Timestamp: String!
+  Timestamp: Int!
   BotName: String!
   PercentageChange: Float!
   Balance: Float!

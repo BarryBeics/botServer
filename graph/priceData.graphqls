@@ -1,6 +1,6 @@
 type HistoricPrices {
   Pair: [Pair!]
-  timestamp: String!
+  Timestamp: Int!
 }
 
 type Pair {
@@ -10,7 +10,7 @@ type Pair {
 
 input NewHistoricPriceInput {
   pairs: [PairInput!]!
-  timestamp: String!
+  Timestamp: Int!
 }
 
 input PairInput {
@@ -23,7 +23,7 @@ extend type Mutation {
   createHistoricPrices(input: NewHistoricPriceInput): [HistoricPrices!]!
 
   "Deletes all prices data for the matching given timestamp"
-  deleteHistoricPrices(timestamp: String!): Boolean!
+  deleteHistoricPrices(Timestamp: Int!): Boolean!
 }
 
 extend type Query {
@@ -31,7 +31,7 @@ extend type Query {
   getHistoricPrice(symbol: String!, limit: Int): [HistoricPrices!]!
 
   "Gets all prices data at a given timestamp"
-  getHistoricPricesAtTimestamp(timestamp: String!): [HistoricPrices!]!
+  getHistoricPricesAtTimestamp(Timestamp: Int!): [HistoricPrices!]!
 
   "Returns a count of timestamps in the DB"
   getUniqueTimestampCount: Int!
