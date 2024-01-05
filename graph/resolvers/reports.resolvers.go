@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/barrybeics/botServer/graph/model"
+	"github.com/rs/zerolog/log"
 )
 
 // MutationResolver implementation
@@ -18,6 +19,18 @@ func (r *mutationResolver) CreateActivityReport(ctx context.Context, input *mode
 // CreateTradeOutcomeReport is the resolver for the createTradeOutcomeReport field.
 func (r *mutationResolver) CreateTradeOutcomeReport(ctx context.Context, input *model.NewTradeOutcomeReport) (*model.TradeOutcomeReport, error) {
 	return db.SaveTradeOutcomeReport(input), nil
+}
+
+// DeleteOutcomeReports is the resolver for the deleteOutcomeReports field.
+func (r *mutationResolver) DeleteOutcomeReports(ctx context.Context, timestamp int) (bool, error) {
+	// Assuming db is an instance of your DB type
+	success, err := db.DeleteTradeOutcomeReport(ctx, timestamp)
+	if err != nil {
+		log.Error().Err(err).Msg("Error deleting trade outcome:")
+		return false, err // Return a boolean value, not a pointer to a boolean
+	}
+
+	return success, nil
 }
 
 // ActivityReport is the resolver for the ActivityReport field.
