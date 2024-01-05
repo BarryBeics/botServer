@@ -23,7 +23,7 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		LOSSCounter:          input.LOSSCounter,
 		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
 		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
-		ClosingBalance:       input.ClosingBalance,
+		AccountBalance:       input.AccountBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
@@ -55,7 +55,7 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		LOSSCounter:          input.LOSSCounter,
 		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
 		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
-		ClosingBalance:       input.ClosingBalance,
+		AccountBalance:       input.AccountBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
@@ -127,7 +127,7 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 }
 
 // UpdateCountersAndBalance updates WIN, LOSS, TIMEOUT counters, and closingBalance in the database for a specific strategy.
-func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, closingBalance float64) error {
+func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, accountBalance float64) error {
 	collection := db.client.Database("go_trading_db").Collection("BotDetails")
 
 	filter := bson.D{{"botinstancename", botInstanceName}}
@@ -160,7 +160,7 @@ func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName stri
 			}()},
 		}},
 		{"$set", bson.D{
-			{"closingbalance", closingBalance},
+			{"accountbalance", accountBalance},
 		}},
 	}
 
