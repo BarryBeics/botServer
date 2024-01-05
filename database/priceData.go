@@ -51,7 +51,10 @@ func (db *DB) HistoricPricesBySymbol(symbol string, limit int) ([]model.Historic
 
 	filter := bson.M{"pair.symbol": symbol} // Assuming your data model has a nested "pair" field
 
-	cursor, err := collection.Find(ctx, filter, options.Find().SetLimit(int64(limit)))
+	// Sort the results in descending order based on the timestamp field.
+	sort := options.Find().SetSort(bson.D{{"Timestamp", -1}})
+
+	cursor, err := collection.Find(ctx, filter, sort, options.Find().SetLimit(int64(limit)))
 	if err != nil {
 		log.Error().Err(err).Msg("Error fetching historic prices by symbol")
 		return nil, err
@@ -152,14 +155,17 @@ func (db *DB) GetUniqueTimestampCount(ctx context.Context) (int, error) {
 	// Extract count from the result
 	count := 0
 	if len(result) > 0 {
-		// Add the switch here to handle both int and int32
-		switch v := result[0]["count"].(type) {
-		case int:
-			count = v
-		case int32:
-			count = int(v)
-		default:
-			log.Error().Msgf("Unexpected type for count: %T", v)
+		// Ensure that "count" field exists in the result
+		if countValue, found := result[0]["count"]; found {
+			// Use type assertion to handle both int and int32
+			switch v := countValue.(type) {
+			case int:
+				count = v
+			case int32:
+				count = int(v)
+			default:
+				log.Error().Msgf("Unexpected type for count: %T", v)
+			}
 		}
 	}
 
