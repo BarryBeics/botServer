@@ -68,6 +68,7 @@ type ComplexityRoot struct {
 		CreateStrategy           func(childComplexity int, input model.StrategyInput) int
 		CreateTradeOutcomeReport func(childComplexity int, input *model.NewTradeOutcomeReport) int
 		DeleteHistoricPrices     func(childComplexity int, timestamp int) int
+		DeleteOutcomeReports     func(childComplexity int, timestamp int) int
 		DeleteStrategy           func(childComplexity int, botInstanceName string) int
 		UpdateCounters           func(childComplexity int, input model.UpdateCountersInput) int
 		UpdateStrategy           func(childComplexity int, botInstanceName string, input model.StrategyInput) int
@@ -93,8 +94,8 @@ type ComplexityRoot struct {
 	}
 
 	Strategy struct {
+		AccountBalance       func(childComplexity int) int
 		BotInstanceName      func(childComplexity int) int
-		ClosingBalance       func(childComplexity int) int
 		CreatedOn            func(childComplexity int) int
 		IncrementsAtr        func(childComplexity int) int
 		LOSSCounter          func(childComplexity int) int
@@ -127,6 +128,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateActivityReport(ctx context.Context, input *model.NewActivityReport) (*model.ActivityReport, error)
 	CreateTradeOutcomeReport(ctx context.Context, input *model.NewTradeOutcomeReport) (*model.TradeOutcomeReport, error)
+	DeleteOutcomeReports(ctx context.Context, timestamp int) (bool, error)
 	CreateStrategy(ctx context.Context, input model.StrategyInput) (*model.Strategy, error)
 	UpdateStrategy(ctx context.Context, botInstanceName string, input model.StrategyInput) (*model.Strategy, error)
 	DeleteStrategy(ctx context.Context, botInstanceName string) (*bool, error)
@@ -297,6 +299,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteHistoricPrices(childComplexity, args["Timestamp"].(int)), true
 
+	case "Mutation.deleteOutcomeReports":
+		if e.complexity.Mutation.DeleteOutcomeReports == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteOutcomeReports_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteOutcomeReports(childComplexity, args["Timestamp"].(int)), true
+
 	case "Mutation.deleteStrategy":
 		if e.complexity.Mutation.DeleteStrategy == nil {
 			break
@@ -459,19 +473,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.TradeOutcomesInFocus(childComplexity, args["BotName"].(string), args["MarketStatus"].(string), args["limit"].(*int)), true
 
+	case "Strategy.AccountBalance":
+		if e.complexity.Strategy.AccountBalance == nil {
+			break
+		}
+
+		return e.complexity.Strategy.AccountBalance(childComplexity), true
+
 	case "Strategy.BotInstanceName":
 		if e.complexity.Strategy.BotInstanceName == nil {
 			break
 		}
 
 		return e.complexity.Strategy.BotInstanceName(childComplexity), true
-
-	case "Strategy.ClosingBalance":
-		if e.complexity.Strategy.ClosingBalance == nil {
-			break
-		}
-
-		return e.complexity.Strategy.ClosingBalance(childComplexity), true
 
 	case "Strategy.CreatedOn":
 		if e.complexity.Strategy.CreatedOn == nil {
@@ -758,7 +772,7 @@ extend type Strategy {
   LOSSCounter: Int
   TIMEOUTGainCounter: Int
   TIMEOUTLossCounter: Int
-  ClosingBalance: Float!
+  AccountBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float
   StopLossPercentage: Float
@@ -777,7 +791,7 @@ input StrategyInput {
   LOSSCounter: Int
   TIMEOUTGainCounter: Int
   TIMEOUTLossCounter: Int
-  ClosingBalance: Float!
+  AccountBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
@@ -792,21 +806,31 @@ input UpdateCountersInput {
   LOSSCounter: Boolean
   TIMEOUTGainCounter: Boolean
   TIMEOUTLossCounter: Boolean
-  ClosingBalance: Float!
+  AccountBalance: Float!
 }
 
 
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
+  "Get Stategy by Bot Name"
   getStrategyByName(BotInstanceName: String!): Strategy
+
+  "Get all strategies"
   getAllStrategies: [Strategy]
 }
 
 # Extend the existing Mutation type with new mutations for CRUD operations on strategies
 extend type Mutation {
+  "Creates a New strategy"
   createStrategy(input: StrategyInput!): Strategy
+
+  "Updates the strategy you have provided the name for"
   updateStrategy(BotInstanceName: String!, input: StrategyInput!): Strategy
+
+  "Deletes strategy for the given bot Name"
   deleteStrategy(BotInstanceName: String!): Boolean
+
+  "Updates the outcome counters and account balance help on the strategy object"
   updateCounters(input: UpdateCountersInput!): Boolean
 }
 `, BuiltIn: false},
@@ -898,16 +922,33 @@ input NewTradeOutcomeReport {
 
 
 type Mutation {
+  "Creates a new market Activity Report"
   createActivityReport(input: NewActivityReport): ActivityReport!
+
+  "Creates a new Trade Outcome Report"
   createTradeOutcomeReport(input: NewTradeOutcomeReport): TradeOutcomeReport!
+
+  "Deletes outcome reports for the matching given timestamp"
+  deleteOutcomeReports(Timestamp: Int!): Boolean!
 }
 
 type Query {
+  "Get activity reports by ID"
   ActivityReport(_id: ID!): ActivityReport!
+
+  "Get All activity reports"
   ActivityReports: [ActivityReport!]!
+
+  "Get Trade Outcome reports by ID"
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
+
+  "Get Trade Outcome reports by Bot Name"
   TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
+
+  "Get Trade Outcome reports by giving Bot Name, Market Status & a given limit"
   TradeOutcomesInFocus(BotName: String!, MarketStatus: String!, limit: Int): [TradeOutcomeReport!]!
+
+  "Get All Trade Outcome reports"
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 
@@ -981,6 +1022,21 @@ func (ec *executionContext) field_Mutation_createTradeOutcomeReport_args(ctx con
 }
 
 func (ec *executionContext) field_Mutation_deleteHistoricPrices_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["Timestamp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Timestamp"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Timestamp"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteOutcomeReports_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -1818,6 +1874,61 @@ func (ec *executionContext) fieldContext_Mutation_createTradeOutcomeReport(ctx c
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_deleteOutcomeReports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteOutcomeReports(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteOutcomeReports(rctx, fc.Args["Timestamp"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteOutcomeReports(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteOutcomeReports_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createStrategy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createStrategy(ctx, field)
 	if err != nil {
@@ -1872,8 +1983,8 @@ func (ec *executionContext) fieldContext_Mutation_createStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
 			case "TIMEOUTLossCounter":
 				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
-			case "ClosingBalance":
-				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
+			case "AccountBalance":
+				return ec.fieldContext_Strategy_AccountBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -1956,8 +2067,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
 			case "TIMEOUTLossCounter":
 				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
-			case "ClosingBalance":
-				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
+			case "AccountBalance":
+				return ec.fieldContext_Strategy_AccountBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -2780,8 +2891,8 @@ func (ec *executionContext) fieldContext_Query_getStrategyByName(ctx context.Con
 				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
 			case "TIMEOUTLossCounter":
 				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
-			case "ClosingBalance":
-				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
+			case "AccountBalance":
+				return ec.fieldContext_Strategy_AccountBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -2864,8 +2975,8 @@ func (ec *executionContext) fieldContext_Query_getAllStrategies(ctx context.Cont
 				return ec.fieldContext_Strategy_TIMEOUTGainCounter(ctx, field)
 			case "TIMEOUTLossCounter":
 				return ec.fieldContext_Strategy_TIMEOUTLossCounter(ctx, field)
-			case "ClosingBalance":
-				return ec.fieldContext_Strategy_ClosingBalance(ctx, field)
+			case "AccountBalance":
+				return ec.fieldContext_Strategy_AccountBalance(ctx, field)
 			case "MovingAveMomentum":
 				return ec.fieldContext_Strategy_MovingAveMomentum(ctx, field)
 			case "TakeProfitPercentage":
@@ -3562,8 +3673,8 @@ func (ec *executionContext) fieldContext_Strategy_TIMEOUTLossCounter(ctx context
 	return fc, nil
 }
 
-func (ec *executionContext) _Strategy_ClosingBalance(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Strategy_ClosingBalance(ctx, field)
+func (ec *executionContext) _Strategy_AccountBalance(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_AccountBalance(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3576,7 +3687,7 @@ func (ec *executionContext) _Strategy_ClosingBalance(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ClosingBalance, nil
+		return obj.AccountBalance, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3593,7 +3704,7 @@ func (ec *executionContext) _Strategy_ClosingBalance(ctx context.Context, field 
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Strategy_ClosingBalance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Strategy_AccountBalance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Strategy",
 		Field:      field,
@@ -6297,7 +6408,7 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "ClosingBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "Owner", "CreatedOn"}
+	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "Owner", "CreatedOn"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6385,15 +6496,15 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 				return it, err
 			}
 			it.TIMEOUTLossCounter = data
-		case "ClosingBalance":
+		case "AccountBalance":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ClosingBalance"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("AccountBalance"))
 			data, err := ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClosingBalance = data
+			it.AccountBalance = data
 		case "MovingAveMomentum":
 			var err error
 
@@ -6452,7 +6563,7 @@ func (ec *executionContext) unmarshalInputUpdateCountersInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "ClosingBalance"}
+	fieldsInOrder := [...]string{"BotInstanceName", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6504,15 +6615,15 @@ func (ec *executionContext) unmarshalInputUpdateCountersInput(ctx context.Contex
 				return it, err
 			}
 			it.TIMEOUTLossCounter = data
-		case "ClosingBalance":
+		case "AccountBalance":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ClosingBalance"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("AccountBalance"))
 			data, err := ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClosingBalance = data
+			it.AccountBalance = data
 		}
 	}
 
@@ -6662,6 +6773,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createTradeOutcomeReport":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTradeOutcomeReport(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteOutcomeReports":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteOutcomeReports(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -7093,8 +7211,8 @@ func (ec *executionContext) _Strategy(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Strategy_TIMEOUTGainCounter(ctx, field, obj)
 		case "TIMEOUTLossCounter":
 			out.Values[i] = ec._Strategy_TIMEOUTLossCounter(ctx, field, obj)
-		case "ClosingBalance":
-			out.Values[i] = ec._Strategy_ClosingBalance(ctx, field, obj)
+		case "AccountBalance":
+			out.Values[i] = ec._Strategy_AccountBalance(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
