@@ -46,16 +46,33 @@ input NewTradeOutcomeReport {
 
 
 type Mutation {
+  "Creates a new market Activity Report"
   createActivityReport(input: NewActivityReport): ActivityReport!
+
+  "Creates a new Trade Outcome Report"
   createTradeOutcomeReport(input: NewTradeOutcomeReport): TradeOutcomeReport!
+
+  "Deletes outcome reports for the matching given timestamp"
+  deleteOutcomeReports(Timestamp: Int!): Boolean!
 }
 
 type Query {
+  "Get activity reports by ID"
   ActivityReport(_id: ID!): ActivityReport!
+
+  "Get All activity reports"
   ActivityReports: [ActivityReport!]!
+
+  "Get Trade Outcome reports by ID"
   TradeOutcomeReport(_id: ID!): TradeOutcomeReport!
+
+  "Get Trade Outcome reports by Bot Name"
   TradeOutcomes(BotName: String!): [TradeOutcomeReport!]!
+
+  "Get Trade Outcome reports by giving Bot Name, Market Status & a given limit"
   TradeOutcomesInFocus(BotName: String!, MarketStatus: String!, limit: Int): [TradeOutcomeReport!]!
+
+  "Get All Trade Outcome reports"
   TradeOutcomeReports: [TradeOutcomeReport!]!
 }
 
