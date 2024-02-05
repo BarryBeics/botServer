@@ -65,30 +65,32 @@ type Strategy struct {
 	LOSSCounter          *int     `json:"LOSSCounter,omitempty"`
 	TIMEOUTGainCounter   *int     `json:"TIMEOUTGainCounter,omitempty"`
 	TIMEOUTLossCounter   *int     `json:"TIMEOUTLossCounter,omitempty"`
-	ClosingBalance       float64  `json:"ClosingBalance"`
+	AccountBalance       float64  `json:"AccountBalance"`
 	MovingAveMomentum    float64  `json:"MovingAveMomentum"`
 	TakeProfitPercentage *float64 `json:"TakeProfitPercentage,omitempty"`
 	StopLossPercentage   *float64 `json:"StopLossPercentage,omitempty"`
+	ATRtollerance        *float64 `json:"ATRtollerance,omitempty"`
 	Owner                *string  `json:"Owner,omitempty"`
 	CreatedOn            int      `json:"CreatedOn" bson:"CreatedOn"`
 }
 
 type StrategyInput struct {
-	BotInstanceName      string  `json:"BotInstanceName"`
-	TradeDuration        int     `json:"TradeDuration"`
-	IncrementsAtr        int     `json:"IncrementsATR"`
-	LongSMADuration      int     `json:"LongSMADuration"`
-	ShortSMADuration     int     `json:"ShortSMADuration"`
-	WINCounter           *int    `json:"WINCounter,omitempty"`
-	LOSSCounter          *int    `json:"LOSSCounter,omitempty"`
-	TIMEOUTGainCounter   *int    `json:"TIMEOUTGainCounter,omitempty"`
-	TIMEOUTLossCounter   *int    `json:"TIMEOUTLossCounter,omitempty"`
-	ClosingBalance       float64 `json:"ClosingBalance"`
-	MovingAveMomentum    float64 `json:"MovingAveMomentum"`
-	TakeProfitPercentage float64 `json:"TakeProfitPercentage"`
-	StopLossPercentage   float64 `json:"StopLossPercentage"`
-	Owner                string  `json:"Owner"`
-	CreatedOn            int      `json:"CreatedOn" bson:"CreatedOn"`
+	BotInstanceName      string   `json:"BotInstanceName"`
+	TradeDuration        int      `json:"TradeDuration"`
+	IncrementsAtr        int      `json:"IncrementsATR"`
+	LongSMADuration      int      `json:"LongSMADuration"`
+	ShortSMADuration     int      `json:"ShortSMADuration"`
+	WINCounter           *int     `json:"WINCounter,omitempty"`
+	LOSSCounter          *int     `json:"LOSSCounter,omitempty"`
+	TIMEOUTGainCounter   *int     `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter   *int     `json:"TIMEOUTLossCounter,omitempty"`
+	AccountBalance       float64  `json:"AccountBalance"`
+	MovingAveMomentum    float64  `json:"MovingAveMomentum"`
+	TakeProfitPercentage float64  `json:"TakeProfitPercentage"`
+	StopLossPercentage   float64  `json:"StopLossPercentage"`
+	ATRtollerance        *float64 `json:"ATRtollerance,omitempty"`
+	Owner                string   `json:"Owner"`
+	CreatedOn            int     `json:"CreatedOn" bson:"CreatedOn"`
 }
 
 type TradeOutcomeReport struct {
@@ -110,5 +112,5 @@ type UpdateCountersInput struct {
 	LOSSCounter        *bool   `json:"LOSSCounter,omitempty"`
 	TIMEOUTGainCounter *bool   `json:"TIMEOUTGainCounter,omitempty"`
 	TIMEOUTLossCounter *bool   `json:"TIMEOUTLossCounter,omitempty"`
-	ClosingBalance     float64 `json:"ClosingBalance"`
+	AccountBalance     float64 `json:"AccountBalance"`
 }

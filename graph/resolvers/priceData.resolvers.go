@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"sort"
 
 	"github.com/barrybeics/botServer/graph/model"
 	"github.com/rs/zerolog/log"
@@ -42,16 +41,6 @@ func (r *queryResolver) GetHistoricPrice(ctx context.Context, symbol string, lim
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting historic prices")
 		return nil, err
-	}
-
-	// Sort the historicPrices by timestamp in descending order
-	sort.Slice(historicPrices, func(i, j int) bool {
-		return historicPrices[i].Timestamp > historicPrices[j].Timestamp
-	})
-
-	// Limit the results to the specified limit
-	if *limit < len(historicPrices) {
-		historicPrices = historicPrices[:*limit]
 	}
 
 	// Convert slice of model.HistoricPrice to slice of *model.HistoricPrice

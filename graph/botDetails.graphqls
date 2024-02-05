@@ -11,10 +11,11 @@ extend type Strategy {
   LOSSCounter: Int
   TIMEOUTGainCounter: Int
   TIMEOUTLossCounter: Int
-  ClosingBalance: Float!
+  AccountBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float
   StopLossPercentage: Float
+  ATRtollerance: Float
   Owner: String
   CreatedOn: Int!
 }
@@ -30,10 +31,11 @@ input StrategyInput {
   LOSSCounter: Int
   TIMEOUTGainCounter: Int
   TIMEOUTLossCounter: Int
-  ClosingBalance: Float!
+  AccountBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
+  ATRtollerance: Float
   Owner: String!
   CreatedOn: Int!
 }
@@ -45,20 +47,30 @@ input UpdateCountersInput {
   LOSSCounter: Boolean
   TIMEOUTGainCounter: Boolean
   TIMEOUTLossCounter: Boolean
-  ClosingBalance: Float!
+  AccountBalance: Float!
 }
 
 
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
+  "Get Stategy by Bot Name"
   getStrategyByName(BotInstanceName: String!): Strategy
+
+  "Get all strategies"
   getAllStrategies: [Strategy]
 }
 
 # Extend the existing Mutation type with new mutations for CRUD operations on strategies
 extend type Mutation {
+  "Creates a New strategy"
   createStrategy(input: StrategyInput!): Strategy
+
+  "Updates the strategy you have provided the name for"
   updateStrategy(BotInstanceName: String!, input: StrategyInput!): Strategy
+
+  "Deletes strategy for the given bot Name"
   deleteStrategy(BotInstanceName: String!): Boolean
+
+  "Updates the outcome counters and account balance help on the strategy object"
   updateCounters(input: UpdateCountersInput!): Boolean
 }

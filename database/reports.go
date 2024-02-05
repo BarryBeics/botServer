@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"sort"
 
 	"time"
 
@@ -158,7 +159,7 @@ func (db *DB) TradeOutcomeReportsByBotNameAndMarketStatus(ctx context.Context, b
 		{"marketstatus", marketStatus},
 	}
 
-	findOptions := options.Find().SetLimit(int64(limit))
+	findOptions := options.Find()
 
 	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
@@ -175,5 +176,32 @@ func (db *DB) TradeOutcomeReportsByBotNameAndMarketStatus(ctx context.Context, b
 		}
 		tradeOutcomeReports = append(tradeOutcomeReports, tradeOutcomeReport)
 	}
+
+	// Sort the data by timestamp in descending order
+	sort.Slice(tradeOutcomeReports, func(i, j int) bool {
+		return tradeOutcomeReports[i].Timestamp > tradeOutcomeReports[j].Timestamp
+	})
+
+	// Apply the limit after sorting
+	if limit > 0 && limit < len(tradeOutcomeReports) {
+		tradeOutcomeReports = tradeOutcomeReports[:limit]
+	}
+
 	return tradeOutcomeReports, nil
+}
+
+// DeleteStrategy deletes a strategy from the database.
+func (db *DB) DeleteTradeOutcomeReport(ctx context.Context, timestamp int) (bool, error) {
+	collection := db.client.Database("go_trading_db").Collection("TradeOutcomeReports")
+
+	// Define a filter to match documents with the specified timestamp
+	filter := bson.D{{"timestamp", timestamp}}
+
+	result, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		log.Error().Err(err).Msg("Error deleting trade outcome from the database:")
+		return false, err
+	}
+
+	return result.DeletedCount > 0, nil
 }
