@@ -94,6 +94,7 @@ type ComplexityRoot struct {
 	}
 
 	Strategy struct {
+		ATRtollerance        func(childComplexity int) int
 		AccountBalance       func(childComplexity int) int
 		BotInstanceName      func(childComplexity int) int
 		CreatedOn            func(childComplexity int) int
@@ -473,6 +474,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.TradeOutcomesInFocus(childComplexity, args["BotName"].(string), args["MarketStatus"].(string), args["limit"].(*int)), true
 
+	case "Strategy.ATRtollerance":
+		if e.complexity.Strategy.ATRtollerance == nil {
+			break
+		}
+
+		return e.complexity.Strategy.ATRtollerance(childComplexity), true
+
 	case "Strategy.AccountBalance":
 		if e.complexity.Strategy.AccountBalance == nil {
 			break
@@ -776,6 +784,7 @@ extend type Strategy {
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float
   StopLossPercentage: Float
+  ATRtollerance: Float
   Owner: String
   CreatedOn: Int!
 }
@@ -795,6 +804,7 @@ input StrategyInput {
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
+  ATRtollerance: Float
   Owner: String!
   CreatedOn: Int!
 }
@@ -1991,6 +2001,8 @@ func (ec *executionContext) fieldContext_Mutation_createStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_TakeProfitPercentage(ctx, field)
 			case "StopLossPercentage":
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
+			case "ATRtollerance":
+				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -2075,6 +2087,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_TakeProfitPercentage(ctx, field)
 			case "StopLossPercentage":
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
+			case "ATRtollerance":
+				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -2899,6 +2913,8 @@ func (ec *executionContext) fieldContext_Query_getStrategyByName(ctx context.Con
 				return ec.fieldContext_Strategy_TakeProfitPercentage(ctx, field)
 			case "StopLossPercentage":
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
+			case "ATRtollerance":
+				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -2983,6 +2999,8 @@ func (ec *executionContext) fieldContext_Query_getAllStrategies(ctx context.Cont
 				return ec.fieldContext_Strategy_TakeProfitPercentage(ctx, field)
 			case "StopLossPercentage":
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
+			case "ATRtollerance":
+				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -3831,6 +3849,47 @@ func (ec *executionContext) _Strategy_StopLossPercentage(ctx context.Context, fi
 }
 
 func (ec *executionContext) fieldContext_Strategy_StopLossPercentage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Strategy",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Strategy_ATRtollerance(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ATRtollerance, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Strategy_ATRtollerance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Strategy",
 		Field:      field,
@@ -6408,7 +6467,7 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "Owner", "CreatedOn"}
+	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "ATRtollerance", "Owner", "CreatedOn"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6532,6 +6591,15 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 				return it, err
 			}
 			it.StopLossPercentage = data
+		case "ATRtollerance":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ATRtollerance"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ATRtollerance = data
 		case "Owner":
 			var err error
 
@@ -7225,6 +7293,8 @@ func (ec *executionContext) _Strategy(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Strategy_TakeProfitPercentage(ctx, field, obj)
 		case "StopLossPercentage":
 			out.Values[i] = ec._Strategy_StopLossPercentage(ctx, field, obj)
+		case "ATRtollerance":
+			out.Values[i] = ec._Strategy_ATRtollerance(ctx, field, obj)
 		case "Owner":
 			out.Values[i] = ec._Strategy_Owner(ctx, field, obj)
 		case "CreatedOn":

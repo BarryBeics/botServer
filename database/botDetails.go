@@ -27,6 +27,7 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
+		ATRtollerance:        input.ATRtollerance,
 		Owner:                &input.Owner,
 		CreatedOn:            input.CreatedOn,
 	}
@@ -59,6 +60,7 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
+		ATRtollerance:        input.ATRtollerance,
 		Owner:                &input.Owner,
 		CreatedOn:            input.CreatedOn,
 	}
