@@ -36,6 +36,7 @@ input StrategyInput {
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
   ATRtollerance: Float
+  Tested: Boolean
   Owner: String!
   CreatedOn: Int!
 }

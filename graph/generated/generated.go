@@ -805,6 +805,7 @@ input StrategyInput {
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
   ATRtollerance: Float
+  Tested: Boolean
   Owner: String!
   CreatedOn: Int!
 }
@@ -6467,7 +6468,7 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "ATRtollerance", "Owner", "CreatedOn"}
+	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "ATRtollerance", "Tested", "Owner", "CreatedOn"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6600,6 +6601,15 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 				return it, err
 			}
 			it.ATRtollerance = data
+		case "Tested":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Tested"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tested = data
 		case "Owner":
 			var err error
 
