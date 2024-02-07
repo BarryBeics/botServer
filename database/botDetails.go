@@ -28,6 +28,7 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
 		ATRtollerance:        input.ATRtollerance,
+		Tested:               input.Tested,
 		Owner:                &input.Owner,
 		CreatedOn:            input.CreatedOn,
 	}
@@ -61,6 +62,7 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
 		ATRtollerance:        input.ATRtollerance,
+		Tested:               input.Tested,
 		Owner:                &input.Owner,
 		CreatedOn:            input.CreatedOn,
 	}
@@ -169,6 +171,22 @@ func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName stri
 	_, err := collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		log.Error().Err(err).Msg("Error updating counters and closing balance in the database:")
+		return err
+	}
+
+	return nil
+}
+
+// UpdateTested updates the tested status in the database for a specific strategy.
+func (db *DB) UpdateTested(ctx context.Context, botInstanceName string, tested bool) error {
+	collection := db.client.Database("go_trading_db").Collection("BotDetails")
+
+	filter := bson.D{{"botinstancename", botInstanceName}}
+	update := bson.D{{"$set", bson.D{{"tested", tested}}}}
+
+	_, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update tested status.")
 		return err
 	}
 

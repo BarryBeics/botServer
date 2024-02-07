@@ -70,6 +70,7 @@ type ComplexityRoot struct {
 		DeleteHistoricPrices     func(childComplexity int, timestamp int) int
 		DeleteOutcomeReports     func(childComplexity int, timestamp int) int
 		DeleteStrategy           func(childComplexity int, botInstanceName string) int
+		MarkAsTested             func(childComplexity int, input model.MarkAsTestedInput) int
 		UpdateCounters           func(childComplexity int, input model.UpdateCountersInput) int
 		UpdateStrategy           func(childComplexity int, botInstanceName string, input model.StrategyInput) int
 	}
@@ -108,6 +109,7 @@ type ComplexityRoot struct {
 		TIMEOUTGainCounter   func(childComplexity int) int
 		TIMEOUTLossCounter   func(childComplexity int) int
 		TakeProfitPercentage func(childComplexity int) int
+		Tested               func(childComplexity int) int
 		TradeDuration        func(childComplexity int) int
 		WINCounter           func(childComplexity int) int
 	}
@@ -123,6 +125,7 @@ type ComplexityRoot struct {
 		PercentageChange func(childComplexity int) int
 		Symbol           func(childComplexity int) int
 		Timestamp        func(childComplexity int) int
+		Volume           func(childComplexity int) int
 	}
 }
 
@@ -134,6 +137,7 @@ type MutationResolver interface {
 	UpdateStrategy(ctx context.Context, botInstanceName string, input model.StrategyInput) (*model.Strategy, error)
 	DeleteStrategy(ctx context.Context, botInstanceName string) (*bool, error)
 	UpdateCounters(ctx context.Context, input model.UpdateCountersInput) (*bool, error)
+	MarkAsTested(ctx context.Context, input model.MarkAsTestedInput) (*bool, error)
 	CreateHistoricPrices(ctx context.Context, input *model.NewHistoricPriceInput) ([]*model.HistoricPrices, error)
 	DeleteHistoricPrices(ctx context.Context, timestamp int) (bool, error)
 }
@@ -323,6 +327,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteStrategy(childComplexity, args["BotInstanceName"].(string)), true
+
+	case "Mutation.markAsTested":
+		if e.complexity.Mutation.MarkAsTested == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_markAsTested_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.MarkAsTested(childComplexity, args["input"].(model.MarkAsTestedInput)), true
 
 	case "Mutation.updateCounters":
 		if e.complexity.Mutation.UpdateCounters == nil {
@@ -572,6 +588,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Strategy.TakeProfitPercentage(childComplexity), true
 
+	case "Strategy.Tested":
+		if e.complexity.Strategy.Tested == nil {
+			break
+		}
+
+		return e.complexity.Strategy.Tested(childComplexity), true
+
 	case "Strategy.TradeDuration":
 		if e.complexity.Strategy.TradeDuration == nil {
 			break
@@ -656,6 +679,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TradeOutcomeReport.Timestamp(childComplexity), true
 
+	case "TradeOutcomeReport.Volume":
+		if e.complexity.TradeOutcomeReport.Volume == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.Volume(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -664,6 +694,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputMarkAsTestedInput,
 		ec.unmarshalInputNewActivityReport,
 		ec.unmarshalInputNewHistoricPriceInput,
 		ec.unmarshalInputNewTradeOutcomeReport,
@@ -785,6 +816,7 @@ extend type Strategy {
   TakeProfitPercentage: Float
   StopLossPercentage: Float
   ATRtollerance: Float
+  Tested: Boolean
   Owner: String
   CreatedOn: Int!
 }
@@ -820,6 +852,11 @@ input UpdateCountersInput {
   AccountBalance: Float!
 }
 
+# Set tested to true
+input MarkAsTestedInput {
+  BotInstanceName: String!
+  Tested: Boolean!
+}
 
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
@@ -843,6 +880,9 @@ extend type Mutation {
 
   "Updates the outcome counters and account balance help on the strategy object"
   updateCounters(input: UpdateCountersInput!): Boolean
+
+  "Set the Tested boolen value by bot Name"
+  markAsTested(input: MarkAsTestedInput!):Boolean
 }
 `, BuiltIn: false},
 	{Name: "../priceData.graphqls", Input: `type HistoricPrices {
@@ -915,6 +955,7 @@ type TradeOutcomeReport {
   Symbol: String!
   Outcome: String!
   ElapsedTime: Int!
+  Volume: Float!
   FearGreedIndex: Int!
   MarketStatus: String!
 }
@@ -927,6 +968,7 @@ input NewTradeOutcomeReport {
   Symbol: String!
   Outcome: String!
   ElapsedTime: Int!
+  Volume: Float!
   FearGreedIndex: Int!
   MarketStatus: String!
 }
@@ -1074,6 +1116,21 @@ func (ec *executionContext) field_Mutation_deleteStrategy_args(ctx context.Conte
 		}
 	}
 	args["BotInstanceName"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_markAsTested_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.MarkAsTestedInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNMarkAsTestedInput2githubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐMarkAsTestedInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1863,6 +1920,8 @@ func (ec *executionContext) fieldContext_Mutation_createTradeOutcomeReport(ctx c
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
+			case "Volume":
+				return ec.fieldContext_TradeOutcomeReport_Volume(ctx, field)
 			case "FearGreedIndex":
 				return ec.fieldContext_TradeOutcomeReport_FearGreedIndex(ctx, field)
 			case "MarketStatus":
@@ -2004,6 +2063,8 @@ func (ec *executionContext) fieldContext_Mutation_createStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "Tested":
+				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -2090,6 +2151,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "Tested":
+				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -2210,6 +2273,58 @@ func (ec *executionContext) fieldContext_Mutation_updateCounters(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateCounters_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_markAsTested(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_markAsTested(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().MarkAsTested(rctx, fc.Args["input"].(model.MarkAsTestedInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_markAsTested(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_markAsTested_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2610,6 +2725,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomeReport(ctx context.Co
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
+			case "Volume":
+				return ec.fieldContext_TradeOutcomeReport_Volume(ctx, field)
 			case "FearGreedIndex":
 				return ec.fieldContext_TradeOutcomeReport_FearGreedIndex(ctx, field)
 			case "MarketStatus":
@@ -2687,6 +2804,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomes(ctx context.Context
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
+			case "Volume":
+				return ec.fieldContext_TradeOutcomeReport_Volume(ctx, field)
 			case "FearGreedIndex":
 				return ec.fieldContext_TradeOutcomeReport_FearGreedIndex(ctx, field)
 			case "MarketStatus":
@@ -2764,6 +2883,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomesInFocus(ctx context.
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
+			case "Volume":
+				return ec.fieldContext_TradeOutcomeReport_Volume(ctx, field)
 			case "FearGreedIndex":
 				return ec.fieldContext_TradeOutcomeReport_FearGreedIndex(ctx, field)
 			case "MarketStatus":
@@ -2841,6 +2962,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomeReports(ctx context.C
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
+			case "Volume":
+				return ec.fieldContext_TradeOutcomeReport_Volume(ctx, field)
 			case "FearGreedIndex":
 				return ec.fieldContext_TradeOutcomeReport_FearGreedIndex(ctx, field)
 			case "MarketStatus":
@@ -2916,6 +3039,8 @@ func (ec *executionContext) fieldContext_Query_getStrategyByName(ctx context.Con
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "Tested":
+				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -3002,6 +3127,8 @@ func (ec *executionContext) fieldContext_Query_getAllStrategies(ctx context.Cont
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "Tested":
+				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
 				return ec.fieldContext_Strategy_Owner(ctx, field)
 			case "CreatedOn":
@@ -3903,6 +4030,47 @@ func (ec *executionContext) fieldContext_Strategy_ATRtollerance(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Strategy_Tested(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_Tested(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tested, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Strategy_Tested(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Strategy",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Strategy_Owner(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Strategy_Owner(ctx, field)
 	if err != nil {
@@ -4335,6 +4503,50 @@ func (ec *executionContext) fieldContext_TradeOutcomeReport_ElapsedTime(ctx cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_Volume(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_Volume(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Volume, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_Volume(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6201,6 +6413,44 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputMarkAsTestedInput(ctx context.Context, obj interface{}) (model.MarkAsTestedInput, error) {
+	var it model.MarkAsTestedInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"BotInstanceName", "Tested"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "BotInstanceName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("BotInstanceName"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BotInstanceName = data
+		case "Tested":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Tested"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tested = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewActivityReport(ctx context.Context, obj interface{}) (model.NewActivityReport, error) {
 	var it model.NewActivityReport
 	asMap := map[string]interface{}{}
@@ -6329,7 +6579,7 @@ func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"Timestamp", "BotName", "PercentageChange", "Balance", "Symbol", "Outcome", "ElapsedTime", "FearGreedIndex", "MarketStatus"}
+	fieldsInOrder := [...]string{"Timestamp", "BotName", "PercentageChange", "Balance", "Symbol", "Outcome", "ElapsedTime", "Volume", "FearGreedIndex", "MarketStatus"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6399,6 +6649,15 @@ func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Cont
 				return it, err
 			}
 			it.ElapsedTime = data
+		case "Volume":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Volume"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Volume = data
 		case "FearGreedIndex":
 			var err error
 
@@ -6878,6 +7137,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateCounters(ctx, field)
 			})
+		case "markAsTested":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_markAsTested(ctx, field)
+			})
 		case "createHistoricPrices":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createHistoricPrices(ctx, field)
@@ -7305,6 +7568,8 @@ func (ec *executionContext) _Strategy(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Strategy_StopLossPercentage(ctx, field, obj)
 		case "ATRtollerance":
 			out.Values[i] = ec._Strategy_ATRtollerance(ctx, field, obj)
+		case "Tested":
+			out.Values[i] = ec._Strategy_Tested(ctx, field, obj)
 		case "Owner":
 			out.Values[i] = ec._Strategy_Owner(ctx, field, obj)
 		case "CreatedOn":
@@ -7383,6 +7648,11 @@ func (ec *executionContext) _TradeOutcomeReport(ctx context.Context, sel ast.Sel
 			}
 		case "ElapsedTime":
 			out.Values[i] = ec._TradeOutcomeReport_ElapsedTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Volume":
+			out.Values[i] = ec._TradeOutcomeReport_Volume(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7915,6 +8185,11 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNMarkAsTestedInput2githubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐMarkAsTestedInput(ctx context.Context, v interface{}) (model.MarkAsTestedInput, error) {
+	res, err := ec.unmarshalInputMarkAsTestedInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNPair2ᚖgithubᚗcomᚋbarrybeicsᚋbotServerᚋgraphᚋmodelᚐPair(ctx context.Context, sel ast.SelectionSet, v *model.Pair) graphql.Marshaler {

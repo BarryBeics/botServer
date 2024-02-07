@@ -16,6 +16,7 @@ extend type Strategy {
   TakeProfitPercentage: Float
   StopLossPercentage: Float
   ATRtollerance: Float
+  Tested: Boolean
   Owner: String
   CreatedOn: Int!
 }
@@ -51,6 +52,11 @@ input UpdateCountersInput {
   AccountBalance: Float!
 }
 
+# Set tested to true
+input MarkAsTestedInput {
+  BotInstanceName: String!
+  Tested: Boolean!
+}
 
 # Extend the existing Query type with a new query to get a strategy by name
 extend type Query {
@@ -74,4 +80,7 @@ extend type Mutation {
 
   "Updates the outcome counters and account balance help on the strategy object"
   updateCounters(input: UpdateCountersInput!): Boolean
+
+  "Set the Tested boolen value by bot Name"
+  markAsTested(input: MarkAsTestedInput!):Boolean
 }

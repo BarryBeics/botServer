@@ -3,8 +3,8 @@
 package model
 
 type ActivityReport struct {
-	ID             string   `json:"_id"`
-	Timestamp      int      `json:"Timestamp"`
+	ID               string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
 	Qty            int      `json:"Qty"`
 	AvgGain        float64  `json:"AvgGain"`
 	TopAGain       *float64 `json:"TopAGain,omitempty"`
@@ -15,11 +15,16 @@ type ActivityReport struct {
 
 type HistoricPrices struct {
 	Pair      []*Pair `json:"Pair,omitempty"`
-	Timestamp int     `json:"Timestamp"`
+	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
+}
+
+type MarkAsTestedInput struct {
+	BotInstanceName string `json:"BotInstanceName"`
+	Tested          bool   `json:"Tested"`
 }
 
 type NewActivityReport struct {
-	Timestamp      int      `json:"Timestamp"`
+	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
 	Qty            int      `json:"Qty"`
 	AvgGain        float64  `json:"AvgGain"`
 	TopAGain       *float64 `json:"TopAGain,omitempty"`
@@ -30,17 +35,18 @@ type NewActivityReport struct {
 
 type NewHistoricPriceInput struct {
 	Pairs     []*PairInput `json:"pairs"`
-	Timestamp int          `json:"Timestamp"`
+	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
 }
 
 type NewTradeOutcomeReport struct {
-	Timestamp        int     `json:"Timestamp"`
+	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
 	BotName          string  `json:"BotName"`
 	PercentageChange float64 `json:"PercentageChange"`
 	Balance          float64 `json:"Balance"`
 	Symbol           string  `json:"Symbol"`
 	Outcome          string  `json:"Outcome"`
 	ElapsedTime      int     `json:"ElapsedTime"`
+	Volume           float64 `json:"Volume"`
 	FearGreedIndex   int     `json:"FearGreedIndex"`
 	MarketStatus     string  `json:"MarketStatus"`
 }
@@ -70,6 +76,7 @@ type Strategy struct {
 	TakeProfitPercentage *float64 `json:"TakeProfitPercentage,omitempty"`
 	StopLossPercentage   *float64 `json:"StopLossPercentage,omitempty"`
 	ATRtollerance        *float64 `json:"ATRtollerance,omitempty"`
+	Tested               *bool    `json:"Tested,omitempty"`
 	Owner                *string  `json:"Owner,omitempty"`
 	CreatedOn            int      `json:"CreatedOn"`
 }
@@ -95,14 +102,15 @@ type StrategyInput struct {
 }
 
 type TradeOutcomeReport struct {
-	ID               string  `json:"_id"`
-	Timestamp        int     `json:"Timestamp"`
+	ID               string  `json:"_id,omitempty" bson:"_id,omitempty"`
+	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
 	BotName          string  `json:"BotName"`
 	PercentageChange float64 `json:"PercentageChange"`
 	Balance          float64 `json:"Balance"`
 	Symbol           string  `json:"Symbol"`
 	Outcome          string  `json:"Outcome"`
 	ElapsedTime      int     `json:"ElapsedTime"`
+	Volume           float64 `json:"Volume"`
 	FearGreedIndex   int     `json:"FearGreedIndex"`
 	MarketStatus     string  `json:"MarketStatus"`
 }
