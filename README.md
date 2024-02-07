@@ -12,3 +12,4 @@ new version
 docker build -t backend:0.62 .
 
 remember to update the .env file before doing docker compose up
+make sure you dont copy over the bson values in models_gen.go

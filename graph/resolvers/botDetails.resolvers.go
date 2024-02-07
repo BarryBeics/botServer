@@ -61,6 +61,18 @@ func (r *mutationResolver) UpdateCounters(ctx context.Context, input model.Updat
 	return &success, nil
 }
 
+// MarkAsTested is the resolver for the markAsTested field.
+func (r *mutationResolver) MarkAsTested(ctx context.Context, input model.MarkAsTestedInput) (*bool, error) {
+	err := db.UpdateTested(ctx, input.BotInstanceName, input.Tested)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update strategy is tested status.")
+		return nil, err
+	}
+
+	success := true
+	return &success, nil
+}
+
 // GetStrategyByName is the resolver for the getStrategyByName field.
 func (r *queryResolver) GetStrategyByName(ctx context.Context, botInstanceName string) (*model.Strategy, error) {
 	// Assuming db is an instance of your DB type

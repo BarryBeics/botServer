@@ -87,6 +87,7 @@ func (db *DB) SaveTradeOutcomeReport(input *model.NewTradeOutcomeReport) *model.
 		Symbol:           input.Symbol,
 		Outcome:          input.Outcome,
 		ElapsedTime:      input.ElapsedTime,
+		Volume:           input.Volume,
 		FearGreedIndex:   input.FearGreedIndex,
 		MarketStatus:     input.MarketStatus,
 	}
