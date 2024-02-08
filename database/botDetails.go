@@ -28,6 +28,7 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
 		ATRtollerance:        input.ATRtollerance,
+		FeesTotal:            input.FeesTotal,
 		Tested:               input.Tested,
 		Owner:                &input.Owner,
 		CreatedOn:            input.CreatedOn,
@@ -62,6 +63,7 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		TakeProfitPercentage: &input.TakeProfitPercentage,
 		StopLossPercentage:   &input.StopLossPercentage,
 		ATRtollerance:        input.ATRtollerance,
+		FeesTotal:            input.FeesTotal,
 		Tested:               input.Tested,
 		Owner:                &input.Owner,
 		CreatedOn:            input.CreatedOn,
@@ -131,7 +133,7 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 }
 
 // UpdateCountersAndBalance updates WIN, LOSS, TIMEOUT counters, and closingBalance in the database for a specific strategy.
-func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, accountBalance float64) error {
+func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, accountBalance, feesTotal float64) error {
 	collection := db.client.Database("go_trading_db").Collection("BotDetails")
 
 	filter := bson.D{{"botinstancename", botInstanceName}}
@@ -165,6 +167,7 @@ func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName stri
 		}},
 		{"$set", bson.D{
 			{"accountbalance", accountBalance},
+			{"feestotal", feesTotal}, // Include the feesTotal field in the update operation
 		}},
 	}
 
