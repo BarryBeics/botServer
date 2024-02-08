@@ -99,6 +99,7 @@ type ComplexityRoot struct {
 		AccountBalance       func(childComplexity int) int
 		BotInstanceName      func(childComplexity int) int
 		CreatedOn            func(childComplexity int) int
+		FeesTotal            func(childComplexity int) int
 		IncrementsAtr        func(childComplexity int) int
 		LOSSCounter          func(childComplexity int) int
 		LongSMADuration      func(childComplexity int) int
@@ -119,6 +120,7 @@ type ComplexityRoot struct {
 		BotName          func(childComplexity int) int
 		ElapsedTime      func(childComplexity int) int
 		FearGreedIndex   func(childComplexity int) int
+		Fee              func(childComplexity int) int
 		ID               func(childComplexity int) int
 		MarketStatus     func(childComplexity int) int
 		Outcome          func(childComplexity int) int
@@ -518,6 +520,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Strategy.CreatedOn(childComplexity), true
 
+	case "Strategy.FeesTotal":
+		if e.complexity.Strategy.FeesTotal == nil {
+			break
+		}
+
+		return e.complexity.Strategy.FeesTotal(childComplexity), true
+
 	case "Strategy.IncrementsATR":
 		if e.complexity.Strategy.IncrementsAtr == nil {
 			break
@@ -636,6 +645,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TradeOutcomeReport.FearGreedIndex(childComplexity), true
+
+	case "TradeOutcomeReport.Fee":
+		if e.complexity.TradeOutcomeReport.Fee == nil {
+			break
+		}
+
+		return e.complexity.TradeOutcomeReport.Fee(childComplexity), true
 
 	case "TradeOutcomeReport._id":
 		if e.complexity.TradeOutcomeReport.ID == nil {
@@ -816,6 +832,7 @@ extend type Strategy {
   TakeProfitPercentage: Float
   StopLossPercentage: Float
   ATRtollerance: Float
+  FeesTotal: Float
   Tested: Boolean
   Owner: String
   CreatedOn: Int!
@@ -837,6 +854,7 @@ input StrategyInput {
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
   ATRtollerance: Float
+  FeesTotal: Float
   Tested: Boolean
   Owner: String!
   CreatedOn: Int!
@@ -850,6 +868,7 @@ input UpdateCountersInput {
   TIMEOUTGainCounter: Boolean
   TIMEOUTLossCounter: Boolean
   AccountBalance: Float!
+  FeesTotal: Float
 }
 
 # Set tested to true
@@ -954,6 +973,7 @@ type TradeOutcomeReport {
   Balance: Float!
   Symbol: String!
   Outcome: String!
+  Fee: Float
   ElapsedTime: Int!
   Volume: Float!
   FearGreedIndex: Int!
@@ -967,6 +987,7 @@ input NewTradeOutcomeReport {
   Balance: Float!
   Symbol: String!
   Outcome: String!
+  Fee: Float
   ElapsedTime: Int!
   Volume: Float!
   FearGreedIndex: Int!
@@ -1918,6 +1939,8 @@ func (ec *executionContext) fieldContext_Mutation_createTradeOutcomeReport(ctx c
 				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
 			case "Outcome":
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			case "Fee":
+				return ec.fieldContext_TradeOutcomeReport_Fee(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
 			case "Volume":
@@ -2063,6 +2086,8 @@ func (ec *executionContext) fieldContext_Mutation_createStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "FeesTotal":
+				return ec.fieldContext_Strategy_FeesTotal(ctx, field)
 			case "Tested":
 				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
@@ -2151,6 +2176,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStrategy(ctx context.Con
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "FeesTotal":
+				return ec.fieldContext_Strategy_FeesTotal(ctx, field)
 			case "Tested":
 				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
@@ -2723,6 +2750,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomeReport(ctx context.Co
 				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
 			case "Outcome":
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			case "Fee":
+				return ec.fieldContext_TradeOutcomeReport_Fee(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
 			case "Volume":
@@ -2802,6 +2831,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomes(ctx context.Context
 				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
 			case "Outcome":
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			case "Fee":
+				return ec.fieldContext_TradeOutcomeReport_Fee(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
 			case "Volume":
@@ -2881,6 +2912,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomesInFocus(ctx context.
 				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
 			case "Outcome":
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			case "Fee":
+				return ec.fieldContext_TradeOutcomeReport_Fee(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
 			case "Volume":
@@ -2960,6 +2993,8 @@ func (ec *executionContext) fieldContext_Query_TradeOutcomeReports(ctx context.C
 				return ec.fieldContext_TradeOutcomeReport_Symbol(ctx, field)
 			case "Outcome":
 				return ec.fieldContext_TradeOutcomeReport_Outcome(ctx, field)
+			case "Fee":
+				return ec.fieldContext_TradeOutcomeReport_Fee(ctx, field)
 			case "ElapsedTime":
 				return ec.fieldContext_TradeOutcomeReport_ElapsedTime(ctx, field)
 			case "Volume":
@@ -3039,6 +3074,8 @@ func (ec *executionContext) fieldContext_Query_getStrategyByName(ctx context.Con
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "FeesTotal":
+				return ec.fieldContext_Strategy_FeesTotal(ctx, field)
 			case "Tested":
 				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
@@ -3127,6 +3164,8 @@ func (ec *executionContext) fieldContext_Query_getAllStrategies(ctx context.Cont
 				return ec.fieldContext_Strategy_StopLossPercentage(ctx, field)
 			case "ATRtollerance":
 				return ec.fieldContext_Strategy_ATRtollerance(ctx, field)
+			case "FeesTotal":
+				return ec.fieldContext_Strategy_FeesTotal(ctx, field)
 			case "Tested":
 				return ec.fieldContext_Strategy_Tested(ctx, field)
 			case "Owner":
@@ -4030,6 +4069,47 @@ func (ec *executionContext) fieldContext_Strategy_ATRtollerance(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Strategy_FeesTotal(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Strategy_FeesTotal(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FeesTotal, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Strategy_FeesTotal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Strategy",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Strategy_Tested(ctx context.Context, field graphql.CollectedField, obj *model.Strategy) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Strategy_Tested(ctx, field)
 	if err != nil {
@@ -4459,6 +4539,47 @@ func (ec *executionContext) fieldContext_TradeOutcomeReport_Outcome(ctx context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TradeOutcomeReport_Fee(ctx context.Context, field graphql.CollectedField, obj *model.TradeOutcomeReport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TradeOutcomeReport_Fee(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fee, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TradeOutcomeReport_Fee(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TradeOutcomeReport",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6579,7 +6700,7 @@ func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"Timestamp", "BotName", "PercentageChange", "Balance", "Symbol", "Outcome", "ElapsedTime", "Volume", "FearGreedIndex", "MarketStatus"}
+	fieldsInOrder := [...]string{"Timestamp", "BotName", "PercentageChange", "Balance", "Symbol", "Outcome", "Fee", "ElapsedTime", "Volume", "FearGreedIndex", "MarketStatus"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6640,6 +6761,15 @@ func (ec *executionContext) unmarshalInputNewTradeOutcomeReport(ctx context.Cont
 				return it, err
 			}
 			it.Outcome = data
+		case "Fee":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Fee"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Fee = data
 		case "ElapsedTime":
 			var err error
 
@@ -6727,7 +6857,7 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "ATRtollerance", "Tested", "Owner", "CreatedOn"}
+	fieldsInOrder := [...]string{"BotInstanceName", "TradeDuration", "IncrementsATR", "LongSMADuration", "ShortSMADuration", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "MovingAveMomentum", "TakeProfitPercentage", "StopLossPercentage", "ATRtollerance", "FeesTotal", "Tested", "Owner", "CreatedOn"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6860,6 +6990,15 @@ func (ec *executionContext) unmarshalInputStrategyInput(ctx context.Context, obj
 				return it, err
 			}
 			it.ATRtollerance = data
+		case "FeesTotal":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("FeesTotal"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FeesTotal = data
 		case "Tested":
 			var err error
 
@@ -6900,7 +7039,7 @@ func (ec *executionContext) unmarshalInputUpdateCountersInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"BotInstanceName", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance"}
+	fieldsInOrder := [...]string{"BotInstanceName", "WINCounter", "LOSSCounter", "TIMEOUTGainCounter", "TIMEOUTLossCounter", "AccountBalance", "FeesTotal"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6961,6 +7100,15 @@ func (ec *executionContext) unmarshalInputUpdateCountersInput(ctx context.Contex
 				return it, err
 			}
 			it.AccountBalance = data
+		case "FeesTotal":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("FeesTotal"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FeesTotal = data
 		}
 	}
 
@@ -7568,6 +7716,8 @@ func (ec *executionContext) _Strategy(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Strategy_StopLossPercentage(ctx, field, obj)
 		case "ATRtollerance":
 			out.Values[i] = ec._Strategy_ATRtollerance(ctx, field, obj)
+		case "FeesTotal":
+			out.Values[i] = ec._Strategy_FeesTotal(ctx, field, obj)
 		case "Tested":
 			out.Values[i] = ec._Strategy_Tested(ctx, field, obj)
 		case "Owner":
@@ -7646,6 +7796,8 @@ func (ec *executionContext) _TradeOutcomeReport(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "Fee":
+			out.Values[i] = ec._TradeOutcomeReport_Fee(ctx, field, obj)
 		case "ElapsedTime":
 			out.Values[i] = ec._TradeOutcomeReport_ElapsedTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

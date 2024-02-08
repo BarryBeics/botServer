@@ -27,6 +27,7 @@ type TradeOutcomeReport {
   Balance: Float!
   Symbol: String!
   Outcome: String!
+  Fee: Float
   ElapsedTime: Int!
   Volume: Float!
   FearGreedIndex: Int!
@@ -40,6 +41,7 @@ input NewTradeOutcomeReport {
   Balance: Float!
   Symbol: String!
   Outcome: String!
+  Fee: Float
   ElapsedTime: Int!
   Volume: Float!
   FearGreedIndex: Int!

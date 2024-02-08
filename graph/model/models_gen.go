@@ -45,6 +45,7 @@ type NewTradeOutcomeReport struct {
 	Balance          float64 `json:"Balance"`
 	Symbol           string  `json:"Symbol"`
 	Outcome          string  `json:"Outcome"`
+	Fee              *float64 `json:"Fee,omitempty"`
 	ElapsedTime      int     `json:"ElapsedTime"`
 	Volume           float64 `json:"Volume"`
 	FearGreedIndex   int     `json:"FearGreedIndex"`
@@ -76,6 +77,7 @@ type Strategy struct {
 	TakeProfitPercentage *float64 `json:"TakeProfitPercentage,omitempty"`
 	StopLossPercentage   *float64 `json:"StopLossPercentage,omitempty"`
 	ATRtollerance        *float64 `json:"ATRtollerance,omitempty"`
+	FeesTotal            *float64 `json:"FeesTotal,omitempty"`
 	Tested               *bool    `json:"Tested,omitempty"`
 	Owner                *string  `json:"Owner,omitempty"`
 	CreatedOn            int      `json:"CreatedOn"`
@@ -96,6 +98,7 @@ type StrategyInput struct {
 	TakeProfitPercentage float64  `json:"TakeProfitPercentage"`
 	StopLossPercentage   float64  `json:"StopLossPercentage"`
 	ATRtollerance        *float64 `json:"ATRtollerance,omitempty"`
+	FeesTotal            *float64 `json:"FeesTotal,omitempty"`
 	Tested               *bool    `json:"Tested,omitempty"`
 	Owner                string   `json:"Owner"`
 	CreatedOn            int      `json:"CreatedOn"`
@@ -104,22 +107,24 @@ type StrategyInput struct {
 type TradeOutcomeReport struct {
 	ID               string  `json:"_id,omitempty" bson:"_id,omitempty"`
 	Timestamp      int      `json:"Timestamp" bson:"Timestamp"`
-	BotName          string  `json:"BotName"`
-	PercentageChange float64 `json:"PercentageChange"`
-	Balance          float64 `json:"Balance"`
-	Symbol           string  `json:"Symbol"`
-	Outcome          string  `json:"Outcome"`
-	ElapsedTime      int     `json:"ElapsedTime"`
-	Volume           float64 `json:"Volume"`
-	FearGreedIndex   int     `json:"FearGreedIndex"`
-	MarketStatus     string  `json:"MarketStatus"`
+	BotName          string   `json:"BotName"`
+	PercentageChange float64  `json:"PercentageChange"`
+	Balance          float64  `json:"Balance"`
+	Symbol           string   `json:"Symbol"`
+	Outcome          string   `json:"Outcome"`
+	Fee              *float64 `json:"Fee,omitempty"`
+	ElapsedTime      int      `json:"ElapsedTime"`
+	Volume           float64  `json:"Volume"`
+	FearGreedIndex   int      `json:"FearGreedIndex"`
+	MarketStatus     string   `json:"MarketStatus"`
 }
 
 type UpdateCountersInput struct {
-	BotInstanceName    string  `json:"BotInstanceName"`
-	WINCounter         *bool   `json:"WINCounter,omitempty"`
-	LOSSCounter        *bool   `json:"LOSSCounter,omitempty"`
-	TIMEOUTGainCounter *bool   `json:"TIMEOUTGainCounter,omitempty"`
-	TIMEOUTLossCounter *bool   `json:"TIMEOUTLossCounter,omitempty"`
-	AccountBalance     float64 `json:"AccountBalance"`
+	BotInstanceName    string   `json:"BotInstanceName"`
+	WINCounter         *bool    `json:"WINCounter,omitempty"`
+	LOSSCounter        *bool    `json:"LOSSCounter,omitempty"`
+	TIMEOUTGainCounter *bool    `json:"TIMEOUTGainCounter,omitempty"`
+	TIMEOUTLossCounter *bool    `json:"TIMEOUTLossCounter,omitempty"`
+	AccountBalance     float64  `json:"AccountBalance"`
+	FeesTotal          *float64 `json:"FeesTotal,omitempty"`
 }

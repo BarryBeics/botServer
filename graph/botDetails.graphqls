@@ -16,6 +16,7 @@ extend type Strategy {
   TakeProfitPercentage: Float
   StopLossPercentage: Float
   ATRtollerance: Float
+  FeesTotal: Float
   Tested: Boolean
   Owner: String
   CreatedOn: Int!
@@ -37,6 +38,7 @@ input StrategyInput {
   TakeProfitPercentage: Float!
   StopLossPercentage: Float!
   ATRtollerance: Float
+  FeesTotal: Float
   Tested: Boolean
   Owner: String!
   CreatedOn: Int!
@@ -50,6 +52,7 @@ input UpdateCountersInput {
   TIMEOUTGainCounter: Boolean
   TIMEOUTLossCounter: Boolean
   AccountBalance: Float!
+  FeesTotal: Float
 }
 
 # Set tested to true
