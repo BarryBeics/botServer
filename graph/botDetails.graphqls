@@ -11,6 +11,8 @@ extend type Strategy {
   LOSSCounter: Int
   TIMEOUTGainCounter: Int
   TIMEOUTLossCounter: Int
+  NetGainCounter: Int
+  NetLossCounter: Int
   AccountBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float
@@ -33,6 +35,8 @@ input StrategyInput {
   LOSSCounter: Int
   TIMEOUTGainCounter: Int
   TIMEOUTLossCounter: Int
+  NetGainCounter: Int
+  NetLossCounter: Int
   AccountBalance: Float!
   MovingAveMomentum: Float!
   TakeProfitPercentage: Float!
@@ -51,6 +55,8 @@ input UpdateCountersInput {
   LOSSCounter: Boolean
   TIMEOUTGainCounter: Boolean
   TIMEOUTLossCounter: Boolean
+  NetGainCounter: Boolean
+  NetLossCounter: Boolean
   AccountBalance: Float!
   FeesTotal: Float
 }

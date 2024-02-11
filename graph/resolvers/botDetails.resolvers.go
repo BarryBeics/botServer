@@ -50,7 +50,7 @@ func (r *mutationResolver) DeleteStrategy(ctx context.Context, botInstanceName s
 // UpdateCounters is the resolver for the updateCounters field.
 func (r *mutationResolver) UpdateCounters(ctx context.Context, input model.UpdateCountersInput) (*bool, error) {
 	// Use input values to call the underlying database operation
-	err := db.UpdateCountersAndBalance(ctx, input.BotInstanceName, *input.WINCounter, *input.LOSSCounter, *input.TIMEOUTGainCounter, *input.TIMEOUTLossCounter, input.AccountBalance, *input.FeesTotal)
+	err := db.UpdateCountersAndBalance(ctx, input.BotInstanceName, *input.WINCounter, *input.LOSSCounter, *input.TIMEOUTGainCounter, *input.TIMEOUTLossCounter, *input.NetGainCounter, *input.NetLossCounter, input.AccountBalance, *input.FeesTotal)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to update counters.")
 		return nil, err
