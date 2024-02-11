@@ -23,6 +23,8 @@ func (db *DB) CreateStrategy(ctx context.Context, input model.StrategyInput) (*m
 		LOSSCounter:          input.LOSSCounter,
 		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
 		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
+		NetGainCounter:       input.NetGainCounter,
+		NetLossCounter:       input.NetLossCounter,
 		AccountBalance:       input.AccountBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
@@ -58,6 +60,8 @@ func (db *DB) UpdateStrategy(ctx context.Context, botInstanceName string, input 
 		LOSSCounter:          input.LOSSCounter,
 		TIMEOUTGainCounter:   input.TIMEOUTGainCounter,
 		TIMEOUTLossCounter:   input.TIMEOUTLossCounter,
+		NetGainCounter:       input.NetGainCounter,
+		NetLossCounter:       input.NetLossCounter,
 		AccountBalance:       input.AccountBalance,
 		MovingAveMomentum:    input.MovingAveMomentum,
 		TakeProfitPercentage: &input.TakeProfitPercentage,
@@ -133,7 +137,7 @@ func (db *DB) GetAllStrategies(ctx context.Context) ([]*model.Strategy, error) {
 }
 
 // UpdateCountersAndBalance updates WIN, LOSS, TIMEOUT counters, and closingBalance in the database for a specific strategy.
-func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss bool, accountBalance, feesTotal float64) error {
+func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName string, incrementWIN, incrementLOSS, incrementTIMEOUTGain, incrementTIMEOUTLoss, incrementNetGain, incrementNetLoss bool, accountBalance, feesTotal float64) error {
 	collection := db.client.Database("go_trading_db").Collection("BotDetails")
 
 	filter := bson.D{{"botinstancename", botInstanceName}}
@@ -160,6 +164,18 @@ func (db *DB) UpdateCountersAndBalance(ctx context.Context, botInstanceName stri
 			}()},
 			{"timeoutlosscounter", func() int {
 				if incrementTIMEOUTLoss {
+					return 1
+				}
+				return 0
+			}()},
+			{"netwincounter", func() int {
+				if incrementNetGain {
+					return 1
+				}
+				return 0
+			}()},
+			{"netlosscounter", func() int {
+				if incrementNetLoss {
 					return 1
 				}
 				return 0
